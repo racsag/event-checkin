@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Check-In</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f5f5f5;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    .btn {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      padding: 20px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Tap to Check-In</h1>
+
+<button class="btn" onclick="checkIn(1,0)">👤 1 Adult</button>
+<button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
+<button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Child</button>
+<button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
+<button class="btn" onclick="checkIn(2,3)">👨‍👩‍👧‍👧‍👦 2 Adults + 3 Children</button>
+
+<p id="msg"></p>
+
+<script>
+function checkIn(adults, children) {
+  fetch("YOUR_API_ENDPOINT_HERE", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      adults: adults,
+      children: children,
+      time: new Date().toISOString()
+    })
+  })
+  .then(() => {
+    document.getElementById("msg").innerText = "✅ Checked in!";
+  });
+}
+</script>
+
+</body>
+</html>
