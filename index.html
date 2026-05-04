@@ -4,30 +4,33 @@
   <title>Event Check-In</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: #f5f5f5;
-    }
-    h1 {
-      margin-top: 20px;
+    body { font-family: Arial; text-align: center; background: #f5f5f5; }
+    .counter { font-size: 22px; margin: 10px; }
+    .big { font-size: 28px; font-weight: bold; }
+    input {
+      display: block; width: 80%; margin: 10px auto; padding: 15px;
+      border-radius: 10px; border: 1px solid #ccc;
     }
     .btn {
-      display: block;
-      width: 80%;
-      margin: 10px auto;
-      padding: 20px;
-      font-size: 20px;
-      border-radius: 12px;
-      border: none;
-      background: #4CAF50;
-      color: white;
+      display: block; width: 80%; margin: 10px auto; padding: 20px;
+      font-size: 18px; border-radius: 12px; border: none;
+      background: #4CAF50; color: white;
     }
   </style>
 </head>
 <body>
 
-<h1>Tap to Check-In</h1>
+<h2>Event Check-In</h2>
+
+<div class="counter big">👥 Total: <span id="total">0</span></div>
+<div class="counter">🧑 Adults: <span id="adults">0</span></div>
+<div class="counter">🧒 Children: <span id="children">0</span></div>
+
+<input type="text" id="name" placeholder="Full Name">
+<input type="email" id="email" placeholder="Email">
+<input type="tel" id="phone" placeholder="Emergency Contact">
+
+<h3>Select Group Size</h3>
 
 <button class="btn" onclick="checkIn(1,0)">👤 1 Adult</button>
 <button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
@@ -38,21 +41,98 @@
 <p id="msg"></p>
 
 <script>
+const API_URL = https://sheetdb.io/api/v1/a0rzdx90pgkp5";
+
+// Auto-fill saved user
+window.onload = function() {
+  document.getElementById("name").value = localStorage.getItem("name") || "";
+  document.getElementById("email").value = localStorage.getItem("email") || "";
+  document.getElementById("phone").value = localStorage.getItem("phone") || "";
+  loadCounts();
+};
+
+// Week number
+function getWeekNumber() {
+  const d = new Date();
+  const start = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - start) / (7 * 24 * 60 * 60 * 1000)));
+}
+
+// Load and calculate counts
+function loadCounts() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      let adults = 0;
+      let children = 0;
+
+      data.forEach(row => {
+        adults += Number(row.adults || 0);
+        children += Number(row.children || 0);
+      });
+
+      document.getElementById("adults").innerText = adults;
+      document.getElementById("children").innerText = children;
+      document.getElementById("total").innerText = adults + children;
+    });
+}
+
+// Refresh every 5 seconds
+setInterval(loadCounts, 5000);
+
+// Check-in with duplicate prevention
 function checkIn(adults, children) {
-  fetch("https://sheetdb.io/api/v1/a0rzdx90pgkp5", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      adults: adults,
-      children: children,
-      time: new Date().toISOString()
-    })
-  })
-  .then(() => {
-    document.getElementById("msg").innerText = "✅ Checked in!";
-  });
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const phone = document.getElementById("phone").value.trim();
+
+  if (!name || !email || !phone) {
+    document.getElementById("msg").innerText = "⚠️ Please fill details first";
+    return;
+  }
+
+  const currentWeek = getWeekNumber();
+
+  // 🔒 Check duplicates
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      const alreadyExists = data.some(row =>
+        row.email?.toLowerCase() === email &&
+        Number(row.week) === currentWeek
+      );
+
+      if (alreadyExists) {
+        document.getElementById("msg").innerText = "⚠️ Already checked in this week";
+        return;
+      }
+
+      // Save locally (auto-fill next time)
+      localStorage.setItem("name", name);
+      localStorage.setItem("email", email);
+      localStorage.setItem("phone", phone);
+
+      // Submit data
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: [{
+            name: name,
+            email: email,
+            emergency_contact: phone,
+            adults: adults,
+            children: children,
+            time: new Date().toISOString(),
+            week: currentWeek
+          }]
+        })
+      })
+      .then(() => {
+        document.getElementById("msg").innerText = "✅ Checked in!";
+        loadCounts();
+      });
+    });
 }
 </script>
 
