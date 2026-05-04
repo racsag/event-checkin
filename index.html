@@ -32,7 +32,7 @@
 
 <h3>Select Group Size</h3>
 
-<button class="btn" onclick="checkIn(1,0)">👤 1 Adult</button>
+<button class="btn" onclick="checkIn(1,0)">👤 1 Adults</button>
 <button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
 <button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Children</button>
 <button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
@@ -60,7 +60,7 @@ function getWeekNumber() {
 
 // Load and calculate counts
 function loadCounts() {
-  fetch(API_URL)
+  fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5)
     .then(res => res.json())
     .then(data => {
       let adults = 0;
@@ -94,7 +94,7 @@ function checkIn(adults, children) {
   const currentWeek = getWeekNumber();
 
   // 🔒 Check duplicates
-  fetch(API_URL)
+  fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5)
     .then(res => res.json())
     .then(data => {
       const alreadyExists = data.some(row =>
@@ -113,7 +113,7 @@ function checkIn(adults, children) {
       localStorage.setItem("phone", phone);
 
       // Submit data
-      fetch(API_URL, {
+      fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
