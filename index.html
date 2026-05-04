@@ -16,19 +16,20 @@
       font-size: 18px; border-radius: 12px; border: none;
       background: #4CAF50; color: white;
     }
+    .admin-only { display: none; }
   </style>
 </head>
 <body>
 
 <h2>Event Check-In</h2>
 
-<div class="counter big">👥 Total: <span id="total">0</span></div>
+<div class="counter big admin-only">👥 Total: <span id="total">0</span></div>
 <div class="counter">🧑 Adults: <span id="adults">0</span></div>
 <div class="counter">🧒 Children: <span id="children">0</span></div>
 
 <input type="text" id="name" placeholder="Full Name">
-<input type="email" id="email" placeholder="Email">
-<input type="tel" id="phone" placeholder="Emergency Contact">
+<input type="email" id="email" placeholder="Email (optional)">
+<input type="tel" id="phone" placeholder="Emergency Contact (optional)">
 
 <h3>Select Group Size</h3>
 
@@ -36,18 +37,30 @@
 <button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
 <button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Children</button>
 <button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
-<button class="btn" onclick="checkIn(2,3)">👨‍👩‍👧‍👧‍👦 2 Adults + 3 Children</button>
+<button class="btn" onclick="checkIn(1,2)">👨‍👩‍👧‍👧 1 Adult + 2 Children</button>
 
 <p id="msg"></p>
 
 <script>
 const API_URL = "https://sheetdb.io/api/v1/a0rzdx90pgkp5";
 
+// Check if user is admin (owner) based on URL parameter
+function isAdmin() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("admin") === "true";
+}
+
 // Auto-fill saved user
 window.onload = function() {
   document.getElementById("name").value = localStorage.getItem("name") || "";
   document.getElementById("email").value = localStorage.getItem("email") || "";
   document.getElementById("phone").value = localStorage.getItem("phone") || "";
+  
+  // Show total only to admin
+  if (isAdmin()) {
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "block");
+  }
+  
   loadCounts();
 };
 
@@ -60,7 +73,7 @@ function getWeekNumber() {
 
 // Load and calculate counts
 function loadCounts() {
-  fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5)
+  fetch(API_URL)
     .then(res => res.json())
     .then(data => {
       let adults = 0;
@@ -86,25 +99,28 @@ function checkIn(adults, children) {
   const email = document.getElementById("email").value.trim().toLowerCase();
   const phone = document.getElementById("phone").value.trim();
 
-  if (!name || !email || !phone) {
-    document.getElementById("msg").innerText = "⚠️ Please fill details first";
+  if (!name) {
+    document.getElementById("msg").innerText = "⚠️ Please enter your name";
     return;
   }
 
   const currentWeek = getWeekNumber();
 
-  // 🔒 Check duplicates
-  fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5)
+  // 🔒 Check duplicates (if email is provided)
+  fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const alreadyExists = data.some(row =>
-        row.email?.toLowerCase() === email &&
-        Number(row.week) === currentWeek
-      );
+      // Only check for duplicates if email is provided
+      if (email) {
+        const alreadyExists = data.some(row =>
+          row.email?.toLowerCase() === email &&
+          Number(row.week) === currentWeek
+        );
 
-      if (alreadyExists) {
-        document.getElementById("msg").innerText = "⚠️ Already checked in this week";
-        return;
+        if (alreadyExists) {
+          document.getElementById("msg").innerText = "⚠️ Already checked in this week";
+          return;
+        }
       }
 
       // Save locally (auto-fill next time)
@@ -113,14 +129,14 @@ function checkIn(adults, children) {
       localStorage.setItem("phone", phone);
 
       // Submit data
-      fetch(https://sheetdb.io/api/v1/a0rzdx90pgkp5, {
+      fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           data: [{
             name: name,
-            email: email,
-            emergency_contact: phone,
+            email: email || undefined,
+            emergency_contact: phone || undefined,
             adults: adults,
             children: children,
             time: new Date().toISOString(),
