@@ -176,14 +176,24 @@
       box-shadow: 0 8px 16px rgba(58, 134, 255, 0.2);
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       transform: translateY(-4px);
       box-shadow: 0 12px 24px rgba(58, 134, 255, 0.3);
       border-color: rgba(255, 255, 255, 0.2);
     }
 
-    .btn:active {
+    .btn:active:not(:disabled) {
       transform: translateY(-2px);
+    }
+
+    .btn.active {
+      border-color: white;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 16px rgba(58, 134, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .disclaimer {
@@ -233,6 +243,8 @@
       background: transparent;
       transition: all 0.3s ease;
       letter-spacing: 0.3px;
+      role: status;
+      aria-live: polite;
     }
 
     #msg.success {
@@ -245,6 +257,12 @@
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
       color: #991b1b;
       border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .stats-container {
+      role: status;
+      aria-live: polite;
+      aria-label: "Event statistics";
     }
 
     @media (max-width: 600px) {
@@ -288,25 +306,27 @@
     <p class="subtitle">Welcome to our event</p>
   </header>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">Adults</div>
-      <div class="stat-value" id="adults">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Children</div>
-      <div class="stat-value" id="children">0</div>
-    </div>
-    <div class="stat total">
-      <div class="stat-label">Total</div>
-      <div class="stat-value" id="total">0</div>
+  <div class="stats-container" role="status" aria-live="polite" aria-label="Event statistics">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Adults</div>
+        <div class="stat-value" id="adults">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Children</div>
+        <div class="stat-value" id="children">0</div>
+      </div>
+      <div class="stat total">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="total">0</div>
+      </div>
     </div>
   </div>
 
   <form id="checkInForm" onsubmit="event.preventDefault(); checkIn();">
     <div class="form-group">
       <label for="name">Full Name *</label>
-      <input type="text" id="name" placeholder="John Doe" required>
+      <input type="text" id="name" placeholder="John Doe" required aria-required="true">
     </div>
 
     <div class="form-group">
@@ -322,23 +342,23 @@
     <div class="group-size">
       <div class="group-size-title">Group Composition</div>
       <div class="button-grid">
-        <button type="button" class="btn" onclick="selectGroup(1,0)">👤 1 Adult</button>
-        <button type="button" class="btn" onclick="selectGroup(2,0)">👥 2 Adults</button>
-        <button type="button" class="btn" onclick="selectGroup(1,2)">👨‍👩‍👧‍👧 1A + 2C</button>
-        <button type="button" class="btn" onclick="selectGroup(2,1)">👨‍👩‍👧 2A + 1C</button>
-        <button type="button" class="btn" onclick="selectGroup(2,2)">👨‍👩‍👧‍👧 2A + 2C</button>
-        <button type="button" class="btn" onclick="selectGroup(1,1)">👨‍👩‍👧 1A + 1C</button>
+        <button type="button" class="btn" onclick="selectGroup(1,0)" aria-pressed="false">👤 1 Adult</button>
+        <button type="button" class="btn" onclick="selectGroup(2,0)" aria-pressed="false">👥 2 Adults</button>
+        <button type="button" class="btn" onclick="selectGroup(1,1)" aria-pressed="false">👨‍👩‍👧 1A + 1C</button>
+        <button type="button" class="btn" onclick="selectGroup(1,2)" aria-pressed="false">👨‍👩‍👧‍👧 1A + 2C</button>
+        <button type="button" class="btn" onclick="selectGroup(2,1)" aria-pressed="false">👨‍👩‍👧 2A + 1C</button>
+        <button type="button" class="btn" onclick="selectGroup(2,2)" aria-pressed="false">👨‍👩‍👧‍👧 2A + 2C</button>
       </div>
     </div>
 
     <div class="disclaimer">
       <div class="disclaimer-title">🔒 Data Privacy</div>
-      <p>We collect your personal information to manage event attendance and emergency contact purposes only. Your data is stored securely and will not be shared with third parties. By checking in, you agree to our privacy policy.</p>
+      <p>We collect your personal information to manage event attendance and emergency contact purposes only. Your data is stored securely and will not be shared with third parties. By checking in, you consent to our privacy practices. For more information, please contact the event organizers.</p>
     </div>
 
-    <div id="msg"></div>
+    <div id="msg" role="status" aria-live="polite"></div>
 
-    <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 18px;">Complete Check-In</button>
+    <button type="submit" class="btn" id="submitBtn" style="width: 100%; margin-top: 10px; padding: 18px;">Complete Check-In</button>
   </form>
 </div>
 
@@ -346,6 +366,7 @@
 const API_URL = "https://sheetdb.io/api/v1/a0rzdx90pgkp5";
 let selectedAdults = 0;
 let selectedChildren = 0;
+let selectedButton = null;
 
 // Check if user is admin based on URL parameter
 function isAdmin() {
@@ -396,10 +417,21 @@ function loadCounts() {
 // Refresh counts every 5 seconds
 setInterval(loadCounts, 5000);
 
-// Select group composition
+// Select group composition with visual feedback
 function selectGroup(adults, children) {
   selectedAdults = adults;
   selectedChildren = children;
+
+  // Remove active class from all buttons
+  document.querySelectorAll('.button-grid .btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.setAttribute('aria-pressed', 'false');
+  });
+
+  // Add active class to clicked button
+  event.target.classList.add('active');
+  event.target.setAttribute('aria-pressed', 'true');
+  selectedButton = event.target;
 }
 
 // Display message with styling
@@ -411,6 +443,13 @@ function showMessage(text, isSuccess) {
     msgEl.className = "";
     msgEl.innerText = "";
   }, 4000);
+}
+
+// Enable/disable submit button
+function setSubmitButtonState(disabled) {
+  const submitBtn = document.getElementById("submitBtn");
+  submitBtn.disabled = disabled;
+  submitBtn.innerText = disabled ? "Checking in..." : "Complete Check-In";
 }
 
 // Check-in function
@@ -430,6 +469,7 @@ function checkIn() {
   }
 
   const currentWeek = getWeekNumber();
+  setSubmitButtonState(true);
 
   // Check for duplicates if email is provided
   fetch(API_URL)
@@ -443,6 +483,7 @@ function checkIn() {
 
         if (alreadyExists) {
           showMessage("⚠️ You've already checked in this week", false);
+          setSubmitButtonState(false);
           return;
         }
       }
@@ -471,17 +512,29 @@ function checkIn() {
       .then(() => {
         showMessage("✅ Successfully checked in!", true);
         loadCounts();
+        
+        // Reset form
+        document.getElementById("checkInForm").reset();
+        document.querySelectorAll('.button-grid .btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-pressed', 'false');
+        });
         selectedAdults = 0;
         selectedChildren = 0;
+        selectedButton = null;
+        
+        setSubmitButtonState(false);
       })
       .catch(err => {
         showMessage("❌ Error during check-in. Please try again.", false);
         console.error('Error:', err);
+        setSubmitButtonState(false);
       });
     })
     .catch(err => {
       showMessage("❌ Error checking for duplicates. Please try again.", false);
       console.error('Error:', err);
+      setSubmitButtonState(false);
     });
 }
 </script>
