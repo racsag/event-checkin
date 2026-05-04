@@ -1,77 +1,347 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Check-In</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; text-align: center; background: #f5f5f5; }
-    .counter { font-size: 22px; margin: 10px; }
-    .big { font-size: 28px; font-weight: bold; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 50px 40px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #999;
+      font-weight: 500;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 35px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 15px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .stat.total {
+      display: none;
+      grid-column: 1 / -1;
+    }
+
+    .stat.total .stat-value {
+      color: #764ba2;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     input {
-      display: block; width: 80%; margin: 10px auto; padding: 15px;
-      border-radius: 10px; border: 1px solid #ccc;
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      font-family: inherit;
     }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input::placeholder {
+      color: #bbb;
+    }
+
+    .group-size {
+      margin-bottom: 30px;
+    }
+
+    .group-size-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
     .btn {
-      display: block; width: 80%; margin: 10px auto; padding: 20px;
-      font-size: 18px; border-radius: 12px; border: none;
-      background: #4CAF50; color: white;
+      padding: 16px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .admin-only { display: none; }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .disclaimer {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .disclaimer-title {
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .disclaimer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .disclaimer a:hover {
+      text-decoration: underline;
+    }
+
+    #msg {
+      text-align: center;
+      min-height: 28px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 8px;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    #msg.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    #msg.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 15px;
+      }
+
+      .stat:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
 
-<h2>Event Check-In</h2>
+<div class="container">
+  <header>
+    <h1>✓ Check-In</h1>
+    <p class="subtitle">Welcome to our event</p>
+  </header>
 
-<div class="counter big admin-only">👥 Total: <span id="total">0</span></div>
-<div class="counter">🧑 Adults: <span id="adults">0</span></div>
-<div class="counter">🧒 Children: <span id="children">0</span></div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Adults</div>
+      <div class="stat-value" id="adults">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Children</div>
+      <div class="stat-value" id="children">0</div>
+    </div>
+    <div class="stat total">
+      <div class="stat-label">Total</div>
+      <div class="stat-value" id="total">0</div>
+    </div>
+  </div>
 
-<input type="text" id="name" placeholder="Full Name">
-<input type="email" id="email" placeholder="Email (optional)">
-<input type="tel" id="phone" placeholder="Emergency Contact (optional)">
+  <form id="checkInForm" onsubmit="event.preventDefault(); checkIn();">
+    <div class="form-group">
+      <label for="name">Full Name *</label>
+      <input type="text" id="name" placeholder="John Doe" required>
+    </div>
 
-<h3>Select Group Size</h3>
+    <div class="form-group">
+      <label for="email">Email (Optional)</label>
+      <input type="email" id="email" placeholder="john@example.com">
+    </div>
 
-<button class="btn" onclick="checkIn(1,0)">👤 1 Adults</button>
-<button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
-<button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Children</button>
-<button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
-<button class="btn" onclick="checkIn(1,2)">👨‍👩‍👧‍👧 1 Adult + 2 Children</button>
+    <div class="form-group">
+      <label for="phone">Emergency Contact (Optional)</label>
+      <input type="tel" id="phone" placeholder="+1 (555) 123-4567">
+    </div>
 
-<p id="msg"></p>
+    <div class="group-size">
+      <div class="group-size-title">Group Composition</div>
+      <div class="button-grid">
+        <button type="button" class="btn" onclick="selectGroup(1,0)">👤 1 Adult</button>
+        <button type="button" class="btn" onclick="selectGroup(2,0)">👥 2 Adults</button>
+        <button type="button" class="btn" onclick="selectGroup(2,1)">👨‍👩‍👧 2A + 1C</button>
+        <button type="button" class="btn" onclick="selectGroup(2,2)">👨‍👩‍👧‍👧 2A + 2C</button>
+        <button type="button" class="btn" onclick="selectGroup(1,1)">👨‍👩‍👧 1A + 1C</button>
+        <button type="button" class="btn" onclick="selectGroup(1,2)">👨‍👩‍👧‍👧 1A + 2C</button>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <div class="disclaimer-title">🔒 Data Privacy</div>
+      <p>We collect your personal information to manage event attendance and emergency contact purposes only. Your data is stored securely and will not be shared with third parties. By checking in, you consent to our <a href="#privacy-policy">Privacy Policy</a> and agree to GDPR data protection standards.</p>
+    </div>
+
+    <div id="msg"></div>
+
+    <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 18px;">Complete Check-In</button>
+  </form>
+</div>
 
 <script>
 const API_URL = "https://sheetdb.io/api/v1/a0rzdx90pgkp5";
+let selectedAdults = 0;
+let selectedChildren = 0;
 
-// Check if user is admin (owner) based on URL parameter
+// Check if user is admin based on URL parameter
 function isAdmin() {
   const params = new URLSearchParams(window.location.search);
   return params.get("admin") === "true";
 }
 
-// Auto-fill saved user
+// Initialize on page load
 window.onload = function() {
   document.getElementById("name").value = localStorage.getItem("name") || "";
   document.getElementById("email").value = localStorage.getItem("email") || "";
   document.getElementById("phone").value = localStorage.getItem("phone") || "";
   
-  // Show total only to admin
   if (isAdmin()) {
-    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "block");
+    document.querySelector(".stat.total").style.display = "block";
   }
   
   loadCounts();
 };
 
-// Week number
+// Get week number
 function getWeekNumber() {
   const d = new Date();
   const start = new Date(d.getFullYear(), 0, 1);
   return Math.ceil(((d - start) / (7 * 24 * 60 * 60 * 1000)));
 }
 
-// Load and calculate counts
+// Load and display counts
 function loadCounts() {
   fetch(API_URL)
     .then(res => res.json())
@@ -87,30 +357,52 @@ function loadCounts() {
       document.getElementById("adults").innerText = adults;
       document.getElementById("children").innerText = children;
       document.getElementById("total").innerText = adults + children;
-    });
+    })
+    .catch(err => console.error('Error loading counts:', err));
 }
 
-// Refresh every 5 seconds
+// Refresh counts every 5 seconds
 setInterval(loadCounts, 5000);
 
-// Check-in with duplicate prevention
-function checkIn(adults, children) {
+// Select group composition
+function selectGroup(adults, children) {
+  selectedAdults = adults;
+  selectedChildren = children;
+}
+
+// Display message with styling
+function showMessage(text, isSuccess) {
+  const msgEl = document.getElementById("msg");
+  msgEl.innerText = text;
+  msgEl.className = isSuccess ? "success" : "error";
+  setTimeout(() => {
+    msgEl.className = "";
+    msgEl.innerText = "";
+  }, 4000);
+}
+
+// Check-in function
+function checkIn() {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim().toLowerCase();
   const phone = document.getElementById("phone").value.trim();
 
   if (!name) {
-    document.getElementById("msg").innerText = "⚠️ Please enter your name";
+    showMessage("⚠️ Please enter your name", false);
+    return;
+  }
+
+  if (selectedAdults === 0 && selectedChildren === 0) {
+    showMessage("⚠️ Please select a group composition", false);
     return;
   }
 
   const currentWeek = getWeekNumber();
 
-  // 🔒 Check duplicates (if email is provided)
+  // Check for duplicates if email is provided
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      // Only check for duplicates if email is provided
       if (email) {
         const alreadyExists = data.some(row =>
           row.email?.toLowerCase() === email &&
@@ -118,17 +410,17 @@ function checkIn(adults, children) {
         );
 
         if (alreadyExists) {
-          document.getElementById("msg").innerText = "⚠️ Already checked in this week";
+          showMessage("⚠️ You've already checked in this week", false);
           return;
         }
       }
 
-      // Save locally (auto-fill next time)
+      // Save locally for next time
       localStorage.setItem("name", name);
       localStorage.setItem("email", email);
       localStorage.setItem("phone", phone);
 
-      // Submit data
+      // Submit check-in
       fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,17 +429,27 @@ function checkIn(adults, children) {
             name: name,
             email: email || undefined,
             emergency_contact: phone || undefined,
-            adults: adults,
-            children: children,
+            adults: selectedAdults,
+            children: selectedChildren,
             time: new Date().toISOString(),
             week: currentWeek
           }]
         })
       })
       .then(() => {
-        document.getElementById("msg").innerText = "✅ Checked in!";
+        showMessage("✅ Successfully checked in!", true);
         loadCounts();
+        selectedAdults = 0;
+        selectedChildren = 0;
+      })
+      .catch(err => {
+        showMessage("❌ Error during check-in. Please try again.", false);
+        console.error('Error:', err);
       });
+    })
+    .catch(err => {
+      showMessage("❌ Error checking for duplicates. Please try again.", false);
+      console.error('Error:', err);
     });
 }
 </script>
