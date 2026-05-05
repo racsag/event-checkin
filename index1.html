@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Check-In</title>
+
+<style>
+/* (same styling as yours, trimmed slightly for clarity) */
+body {
+  font-family: sans-serif;
+  background: linear-gradient(135deg,#0f172a,#1e293b,#0f4c75);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;color:#333;
+}
+
+.container {
+  background:#fff;
+  padding:40px;
+  border-radius:20px;
+  max-width:500px;width:100%;
+}
+
+h1 { text-align:center; margin-bottom:10px; }
+.subtitle { text-align:center; color:#666; margin-bottom:30px; }
+
+.stats { display:none; margin-bottom:20px; }
+.stat { text-align:center; margin:10px; }
+
+input {
+  width:100%; padding:12px; margin-bottom:15px;
+  border-radius:8px; border:1px solid #ccc;
+}
+
+.button-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  margin-bottom:20px;
+}
+
+.btn {
+  padding:14px;
+  background:#3a86ff;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.btn.active { background:#0f4c75; }
+
+#msg { margin:10px 0; text-align:center; font-weight:bold; }
+.success { color:green; }
+.error { color:red; }
+
+.disclaimer {
+  margin-top:30px;
+  font-size:12px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>✓ Check-In</h1>
+  <p class="subtitle">Welcome to our event</p>
+
+  <!-- ADMIN ONLY STATS -->
+  <div class="stats" id="statsBox">
+    <div class="stat">Adults: <span id="adults">0</span></div>
+    <div class="stat">Children: <span id="children">0</span></div>
+    <div class="stat">Total: <span id="total">0</span></div>
+  </div>
+
+  <form id="form">
+    <input type="text" id="name" placeholder="Full Name *" required>
+    <input type="email" id="email" placeholder="Email (optional)">
+    <input type="tel" id="phone" placeholder="Phone (optional)">
+
+    <div class="button-grid">
+      <button type="button" onclick="selectGroup(event,1,0)">1 Adult</button>
+      <button type="button" onclick="selectGroup(event,2,0)">2 Adults</button>
+      <button type="button" onclick="selectGroup(event,1,1)">1A + 1C</button>
+      <button type="button" onclick="selectGroup(event,1,2)">1A + 2C</button>
+      <button type="button" onclick="selectGroup(event,2,1)">2A + 1C</button>
+      <button type="button" onclick="selectGroup(event,2,2)">2A + 2C</button>
+    </div>
+
+    <div id="msg"></div>
+
+    <button class="btn" id="submitBtn">Complete Check-In</button>
+  </form>
+
+  <!-- PRIVACY AT END -->
+  <div class="disclaimer">
+    <strong>Privacy:</strong> Your data is used only for event management and emergency contact.
+  </div>
+</div>
+
+<script>
+const API_URL = "https://sheetdb.io/api/v1/a0rzdx90pgkp5";
+
+let selectedAdults = 0;
+let selectedChildren = 0;
+
+// ADMIN CHECK
+function isAdmin() {
+  return new URLSearchParams(window.location.search).get("admin") === "true";
+}
+
+// ISO WEEK
+function getWeek() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+// LOAD COUNTS (ADMIN ONLY)
+function loadCounts() {
+  if (!isAdmin()) return;
+
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      let a=0,c=0;
+      data.forEach(row=>{
+        a+=Number(row.adults||0);
+        c+=Number(row.children||0);
+      });
+      adults.innerText=a;
+      children.innerText=c;
+      total.innerText=a+c;
+    })
+    .catch(()=>{
+      adults.innerText="-";
+      children.innerText="-";
+      total.innerText="-";
+    });
+}
+
+// SELECT GROUP
+function selectGroup(e,a,c){
+  selectedAdults=a;
+  selectedChildren=c;
+
+  document.querySelectorAll(".button-grid button").forEach(b=>{
+    b.classList.remove("active");
+  });
+
+  e.target.classList.add("active");
+}
+
+// MESSAGE
+function msg(text,ok){
+  const el=document.getElementById("msg");
+  el.className=ok?"success":"error";
+  el.innerText=text;
+  setTimeout(()=>el.innerText="",3000);
+}
+
+// SUBMIT
+document.getElementById("form").onsubmit = function(e){
+  e.preventDefault();
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
+  const phone = phoneInput.value.trim();
+
+  if(!name) return msg("Enter name",false);
+  if(!selectedAdults && !selectedChildren) return msg("Select group",false);
+
+  if(!email && !phone){
+    return msg("Provide email or phone",false);
+  }
+
+  const week = getWeek();
+  submitBtn.disabled=true;
+
+  fetch(API_URL)
+  .then(r=>r.json())
+  .then(data=>{
+
+    const exists = data.some(row =>
+      (
+        (email && row.email?.toLowerCase()===email) ||
+        (phone && row.emergency_contact===phone)
+      ) && Number(row.week)===week
+    );
+
+    if(exists){
+      msg("Already checked in this week",false);
+      submitBtn.disabled=false;
+      return;
+    }
+
+    // SAVE
+    return fetch(API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body:JSON.stringify({
+        data:[{
+          name,email,emergency_contact:phone,
+          adults:selectedAdults,
+          children:selectedChildren,
+          time:new Date().toISOString(),
+          week
+        }]
+      })
+    });
+  })
+  .then(()=>{
+    msg("Checked in!",true);
+
+    // KEEP USER INFO
+    localStorage.setItem("name",nameInput.value);
+    localStorage.setItem("email",emailInput.value);
+    localStorage.setItem("phone",phoneInput.value);
+
+    // RESET GROUP ONLY
+    selectedAdults=0;
+    selectedChildren=0;
+    document.querySelectorAll(".button-grid button")
+      .forEach(b=>b.classList.remove("active"));
+
+    submitBtn.disabled=false;
+
+    loadCounts();
+  })
+  .catch(()=>{
+    msg("Error, try again",false);
+    submitBtn.disabled=false;
+  });
+};
+
+// INIT
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const phoneInput = document.getElementById("phone");
+
+window.onload = function(){
+  nameInput.value = localStorage.getItem("name") || "";
+  emailInput.value = localStorage.getItem("email") || "";
+  phoneInput.value = localStorage.getItem("phone") || "";
+
+  if(isAdmin()){
+    document.getElementById("statsBox").style.display="block";
+    loadCounts();
+  }
+};
+</script>
+
+</body>
+</html>
