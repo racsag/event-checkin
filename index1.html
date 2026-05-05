@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Check-In</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b,#0f4c75);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;color:#333;padding:20px;
+}
+
+.container{
+  background:#fff;
+  padding:40px;
+  border-radius:20px;
+  max-width:500px;width:100%;
+}
+
+h1{text-align:center;margin-bottom:10px}
+.subtitle{text-align:center;color:#666;margin-bottom:30px}
+
+.stats{display:none;margin-bottom:20px;text-align:center}
+
+input{
+  width:100%;
+  padding:14px;
+  margin-bottom:15px;
+  border-radius:10px;
+  border:2px solid #e2e8f0;
+}
+
+input:focus{
+  outline:none;
+  border-color:#3a86ff;
+}
+
+.button-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.btn{
+  padding:16px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#0f4c75,#3a86ff);
+  color:#fff;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
+}
+
+/* DEFAULT DIM */
+.button-grid .btn{
+  opacity:0.7;
+}
+
+/* ACTIVE SELECTED */
+.btn.active{
+  opacity:1;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  border:2px solid #14532d;
+  transform:scale(1.05);
+  box-shadow:0 0 0 4px rgba(34,197,94,0.3);
+}
+
+.btn.active::after{
+  content:" ✓";
+}
+
+#msg{text-align:center;margin:10px 0;font-weight:bold}
+.success{color:green}
+.error{color:red}
+
+.disclaimer{
+  margin-top:25px;
+  font-size:12px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>✓ Check-In</h1>
+  <p class="subtitle">Welcome to our event</p>
+
+  <!-- ADMIN ONLY -->
+  <div class="stats" id="statsBox">
+    <div>Adults: <span id="adults">0</span></div>
+    <div>Children: <span id="children">0</span></div>
+    <div>Total: <span id="total">0</span></div>
+  </div>
+
+  <form id="form">
+    <input type="text" id="name" placeholder="Full Name *" required>
+    <input type="email" id="email" placeholder="Email (optional)">
+    
+    <!-- REQUIRED PHONE -->
+    <input type="tel" id="phone" placeholder="Phone Number *" required>
+
+    <div class="button-grid">
+      <button type="button" class="btn" onclick="selectGroup(event,1,0)">👤 1 Adult</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,0)">👥 2 Adults</button>
+      <button type="button" class="btn" onclick="selectGroup(event,1,1)">👨‍👩‍👧 1A + 1C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,1,2)">👨‍👩‍👧‍👧 1A + 2C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,1)">👨‍👩‍👧 2A + 1C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,2)">👨‍👩‍👧‍👧 2A + 2C</button>
+    </div>
+
+    <div id="msg"></div>
+
+    <button class="btn" id="submitBtn" style="width:100%">Complete Check-In</button>
+  </form>
+
+  <!-- PRIVACY AT END -->
+  <div class="disclaimer">
+    <strong>Privacy:</strong> Your information is used only for event attendance and emergency contact purposes.
+  </div>
+</div>
+
+<script>
+const API_URL="https://sheetdb.io/api/v1/a0rzdx90pgkp5";
+
+let selectedAdults=0;
+let selectedChildren=0;
+
+function isAdmin(){
+  return new URLSearchParams(window.location.search).get("admin")==="true";
+}
+
+// ISO WEEK
+function getWeek(){
+  const d=new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+4-(d.getDay()||7));
+  const yearStart=new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
+// LOAD COUNTS (ADMIN ONLY)
+function loadCounts(){
+  if(!isAdmin())return;
+
+  fetch(API_URL)
+  .then(r=>r.json())
+  .then(data=>{
+    let a=0,c=0;
+    data.forEach(row=>{
+      a+=Number(row.adults||0);
+      c+=Number(row.children||0);
+    });
+    adults.innerText=a;
+    children.innerText=c;
+    total.innerText=a+c;
+  })
+  .catch(()=>{
+    adults.innerText="-";
+    children.innerText="-";
+    total.innerText="-";
+  });
+}
+
+// BUTTON SELECT
+function selectGroup(e,a,c){
+  selectedAdults=a;
+  selectedChildren=c;
+
+  document.querySelectorAll(".button-grid .btn").forEach(btn=>{
+    btn.classList.remove("active");
+  });
+
+  e.currentTarget.classList.add("active");
+}
+
+// MESSAGE
+function msg(text,ok){
+  const el=document.getElementById("msg");
+  el.className=ok?"success":"error";
+  el.innerText=text;
+  setTimeout(()=>el.innerText="",3000);
+}
+
+// SUBMIT
+document.getElementById("form").onsubmit=function(e){
+  e.preventDefault();
+
+  const name=nameInput.value.trim();
+  const email=emailInput.value.trim().toLowerCase();
+  const phone=phoneInput.value.trim();
+
+  if(!name)return msg("Enter your name",false);
+  if(!phone)return msg("Phone is required",false);
+  if(!selectedAdults && !selectedChildren)return msg("Select group",false);
+
+  const week=getWeek();
+  submitBtn.disabled=true;
+
+  fetch(API_URL)
+  .then(r=>r.json())
+  .then(data=>{
+
+    const exists=data.some(row =>
+      (
+        (email && row.email?.toLowerCase()===email) ||
+        (phone && row.emergency_contact===phone)
+      ) && Number(row.week)===week
+    );
+
+    if(exists){
+      msg("Already checked in this week",false);
+      submitBtn.disabled=false;
+      return;
+    }
+
+    return fetch(API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body:JSON.stringify({
+        data:[{
+          name,
+          email,
+          emergency_contact:phone,
+          adults:selectedAdults,
+          children:selectedChildren,
+         time: new Date().toLocaleString("en-GB", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit"
+}),
+        }]
+      })
+    });
+  })
+  .then(()=>{
+    msg("Checked in successfully!",true);
+
+    // SAVE USER DATA
+    localStorage.setItem("name",name);
+    localStorage.setItem("email",email);
+    localStorage.setItem("phone",phone);
+
+    // RESET GROUP ONLY
+    selectedAdults=0;
+    selectedChildren=0;
+    document.querySelectorAll(".button-grid .btn")
+      .forEach(b=>b.classList.remove("active"));
+
+    submitBtn.disabled=false;
+
+    loadCounts();
+  })
+  .catch(()=>{
+    msg("Error, try again",false);
+    submitBtn.disabled=false;
+  });
+};
+
+// INIT
+const nameInput=document.getElementById("name");
+const emailInput=document.getElementById("email");
+const phoneInput=document.getElementById("phone");
+const submitBtn=document.getElementById("submitBtn");
+
+window.onload=function(){
+  nameInput.value=localStorage.getItem("name")||"";
+  emailInput.value=localStorage.getItem("email")||"";
+  phoneInput.value=localStorage.getItem("phone")||"";
+
+  if(isAdmin()){
+    document.getElementById("statsBox").style.display="block";
+    loadCounts();
+  }
+};
+</script>
+
+</body>
+</html>
