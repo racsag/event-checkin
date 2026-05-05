@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Check-In</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(circle at top,#1d2b64,#0f172a 60%,#050814);
+  padding:20px;
+  color:#fff;
+}
+
+/* GLASS CARD */
+.container{
+  width:100%;
+  max-width:420px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:28px;
+  padding:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* HEADER */
+h1{
+  text-align:center;
+  font-size:28px;
+  font-weight:700;
+  margin-bottom:6px;
+  letter-spacing:-0.5px;
+}
+
+.subtitle{
+  text-align:center;
+  font-size:13px;
+  opacity:0.7;
+  margin-bottom:22px;
+}
+
+/* INPUTS */
+input{
+  width:100%;
+  padding:14px 14px;
+  margin-bottom:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.06);
+  color:#fff;
+  outline:none;
+  transition:0.2s;
+}
+
+input::placeholder{color:rgba(255,255,255,0.5)}
+
+input:focus{
+  border-color:#4da3ff;
+  box-shadow:0 0 0 3px rgba(77,163,255,0.2);
+}
+
+/* BUTTON GRID */
+.button-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:16px 0;
+}
+
+/* BUTTONS */
+.btn{
+  padding:14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.25s;
+  text-align:center;
+  font-size:13px;
+  backdrop-filter: blur(10px);
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,0.12);
+}
+
+/* ACTIVE STATE (Apple green) */
+.btn.active{
+  background:linear-gradient(135deg,#34c759,#28a745);
+  border-color:transparent;
+  box-shadow:0 10px 25px rgba(52,199,89,0.3);
+  transform:scale(1.03);
+}
+
+.btn.active::after{
+  content:" ✓";
+}
+
+/* MESSAGE */
+#msg{
+  text-align:center;
+  margin-top:10px;
+  font-size:13px;
+  min-height:20px;
+  opacity:0.9;
+}
+
+/* SUBMIT BUTTON */
+#submitBtn{
+  width:100%;
+  margin-top:12px;
+  padding:16px;
+  border-radius:16px;
+  border:none;
+  background:linear-gradient(135deg,#007aff,#4da3ff);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+#submitBtn:active{
+  transform:scale(0.98);
+}
+
+/* PRIVACY */
+.disclaimer{
+  margin-top:18px;
+  font-size:11px;
+  opacity:0.6;
+  text-align:center;
+  line-height:1.4;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Check-In</h1>
+  <div class="subtitle">Welcome to the Shakha</div>
+
+  <form id="form">
+    <input id="name" placeholder="Full Name *" required>
+    <input id="email" placeholder="Email (optional)">
+    <input id="phone" placeholder="UK Phone Number *" required>
+
+    <div class="button-grid">
+      <button type="button" class="btn" onclick="selectGroup(event,1,0)">1 Adult</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,0)">2 Adults</button>
+      <button type="button" class="btn" onclick="selectGroup(event,1,1)">1A + 1C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,1,2)">1A + 2C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,1)">2A + 1C</button>
+      <button type="button" class="btn" onclick="selectGroup(event,2,2)">2A + 2C</button>
+    </div>
+
+    <div id="msg"></div>
+
+    <button id="submitBtn">Complete Check-In</button>
+  </form>
+
+  <div class="disclaimer">
+    We collect your personal information to manage attendance and emergency contact purposes only.Your data is stored securely and will not be shared with the third parties. By checking in, you consent to our privacy practices.  </div>
+</div>
+
+<script>
+let selectedAdults=0;
+let selectedChildren=0;
+
+function selectGroup(e,a,c){
+  selectedAdults=a;
+  selectedChildren=c;
+
+  document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
+  e.currentTarget.classList.add("active");
+}
+
+document.getElementById("form").onsubmit=function(e){
+  e.preventDefault();
+  document.getElementById("msg").innerText="Checked in (UI demo)";
+};
+</script>
+
+</body>
+</html>
