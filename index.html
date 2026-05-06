@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Event Check-In</title>
+<title>Aylesbury HSS Check-In</title>
 
 <style>
 body{
@@ -90,7 +90,7 @@ input::placeholder{color:#aaa}
 <div class="container">
 
 <h1>Check-In</h1>
-<div class="subtitle">Welcome to the event</div>
+<div class="subtitle">Welcome to the Shakha </div>
 
 <!-- ADMIN ONLY -->
 <div class="stats" id="statsBox">
@@ -226,9 +226,9 @@ document.getElementById("form").onsubmit = function(e){
     })
   })
   .then(()=> {
-    msg("Checked in successfully (duplicates prevented server-side)");
+    msg("Already Checked-In )");
     resetForm();
-    setTimeout(loadCounts, 500);
+    setTimeout(loadCounts, 300);
   })
   .catch(()=> msg("Error submitting"));
 };
@@ -240,6 +240,24 @@ window.onload = function(){
     loadCounts();
   }
 };
+
+// AUTO-FILL PHONE NUMBER
+document.getElementById("phone").addEventListener("blur", function() {
+  const phone = this.value.trim();
+  if(!phone) return;
+
+  fetch(`${API_URL}?phone=${encodeURIComponent(phone)}`)
+    .then(r => r.json())
+    .then(data => {
+      if(!data || !data.name) return; // no previous entry
+
+      // Auto-fill name, email, phone
+      document.getElementById("name").value = data.name;
+      document.getElementById("email").value = data.email || "";
+      document.getElementById("phone").value = data.phone || "";
+    })
+    .catch(err => console.error("Auto-fill error:", err));
+});
 </script>
 </body>
 </html>
