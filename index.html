@@ -3,65 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aylesbury HSS Shakha</title>
+<title>Check-In</title>
 
 <style>
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-  background: linear-gradient(180deg, #f5f5f7, #e9e9ed);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  background: radial-gradient(circle at top, #1b2436, #0b1220);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  color: white;
 }
 
 .container {
   width: 92%;
   max-width: 420px;
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(22px);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 28px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
 }
 
 h2 {
   text-align: center;
-  font-weight: 600;
-  color: #1d1d1f;
+  margin: 0;
+  font-size: 24px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
   margin-bottom: 18px;
 }
 
-label {
-  font-size: 13px;
-  color: #6e6e73;
-  margin-top: 12px;
-  display: block;
-}
-
+/* INPUTS */
 input {
   width: 100%;
   padding: 12px 14px;
-  margin-top: 6px;
+  margin-top: 10px;
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.9);
-  font-size: 15px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.25);
+  color: white;
   outline: none;
-  transition: 0.2s;
 }
 
-input:focus {
-  border-color: #0071e3;
-  box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+input::placeholder {
+  color: rgba(255,255,255,0.4);
 }
 
+/* COUNTER (your original style) */
 .counter {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .counter button {
@@ -69,60 +70,51 @@ input:focus {
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: #0071e3;
+  background: #3b82f6;
   color: white;
   font-size: 18px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.counter button:active {
+  transform: scale(0.95);
 }
 
 .counter span {
   font-size: 16px;
   font-weight: 500;
-  color: #1d1d1f;
 }
 
+/* SUBMIT BUTTON (Apple style) */
 button#submitBtn {
   width: 100%;
   margin-top: 18px;
   padding: 14px;
-  border: none;
   border-radius: 14px;
-  background: #0071e3;
+  border: none;
+  background: #3b82f6;
   color: white;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 button:active {
   transform: scale(0.97);
 }
 
-button#submitBtn:disabled {
-  opacity: 0.5;
-}
-
 #message {
   text-align: center;
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 14px;
-  transition: 0.2s;
 }
 
-#disclaimer {
-  font-size: 11px;
-  color: #6e6e73;
+.footer {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
   text-align: center;
-  margin-top: 16px;
-}
-
-@keyframes blink {
-  50% { opacity: 0.3; }
-}
-
-.dot {
-  animation: blink 1s infinite;
+  margin-top: 14px;
 }
 </style>
 </head>
@@ -130,26 +122,24 @@ button#submitBtn:disabled {
 <body>
 
 <div class="container">
-  <h2>Aylesbury HSS Shakha</h2>
 
-  <form id="eventForm">
+  <h2>Check-In</h2>
+  <div class="subtitle">Welcome to the Shakha</div>
 
-    <label>Name *</label>
-    <input type="text" name="name" required>
+  <form id="form">
 
-    <label>Phone *</label>
-    <input type="tel" name="phone" required>
+    <input name="name" placeholder="Full Name *" required>
+    <input name="email" placeholder="Email (optional)">
+    <input name="phone" placeholder="UK Phone * (07123456789)" required>
 
-    <label>Email (optional)</label>
-    <input type="email" name="email">
-
+    <!-- COUNTERS -->
     <label>Adults</label>
     <div class="counter">
       <button type="button" id="adultMinus">-</button>
       <span id="adultCountDisplay">1</span>
       <button type="button" id="adultPlus">+</button>
     </div>
-    <input type="hidden" name="adults" id="adultCount" value="1">
+    <input type="hidden" name="adults" id="adults" value="1">
 
     <label>Children</label>
     <div class="counter">
@@ -157,105 +147,77 @@ button#submitBtn:disabled {
       <span id="childCountDisplay">0</span>
       <button type="button" id="childPlus">+</button>
     </div>
-    <input type="hidden" name="children" id="childCount" value="0">
+    <input type="hidden" name="children" id="children" value="0">
 
-    <button type="submit" id="submitBtn">Register</button>
+    <button type="submit" id="submitBtn">Complete Check-In</button>
+
+    <div id="message"></div>
+
+    <div class="footer">
+     We collect your name and contact details solely for event attendance management and emergency purposes. Your data will be stored securely and will not be shared with third parties. By checking in, you consent to this use of your information.
+    </div>
+
   </form>
 
-  <p id="message"></p>
-
-  <p id="disclaimer">
-    We collect your name and contact details solely for event attendance management and emergency purposes. Your data will be stored securely and will not be shared with third parties. By checking in, you consent to this use of your information.
-  </p>
 </div>
 
 <script>
-const sheetURL = "https://script.google.com/macros/s/AKfycbxI3WoEVTe1wiQ36-FrrFN3zSmtZN0NFtQrlMcWrirWMSnl5nMoQ9W9fckGpqLTtyej/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbyODBejyoNIlFzfbcFtm94fw1h8nPGPu0GLm89rIjBwMXC7SVp5uMoDWEzCMoqGpu88/exec";
 
-const form = document.getElementById("eventForm");
-const message = document.getElementById("message");
-const btn = document.getElementById("submitBtn");
+const form = document.getElementById("form");
+const msg = document.getElementById("message");
 
 let adults = 1;
 let children = 0;
-let isSubmitting = false;
 
-function updateUI() {
+function update() {
   document.getElementById("adultCountDisplay").innerText = adults;
   document.getElementById("childCountDisplay").innerText = children;
-  document.getElementById("adultCount").value = adults;
-  document.getElementById("childCount").value = children;
+  document.getElementById("adults").value = adults;
+  document.getElementById("children").value = children;
 }
 
-document.getElementById("adultPlus").onclick = () => { adults++; updateUI(); };
-document.getElementById("adultMinus").onclick = () => { if(adults>1) adults--; updateUI(); };
+document.getElementById("adultPlus").onclick = () => { adults++; update(); };
+document.getElementById("adultMinus").onclick = () => { if(adults>1) adults--; update(); };
 
-document.getElementById("childPlus").onclick = () => { children++; updateUI(); };
-document.getElementById("childMinus").onclick = () => { if(children>0) children--; updateUI(); };
-
-window.onload = () => {
-  document.querySelector("input[name='name']").focus();
-};
-
-function lockForm() {
-  document.querySelectorAll("input, button").forEach(el => {
-    if (el.id !== "submitBtn") el.disabled = true;
-  });
-  btn.innerText = "Already Registered";
-  btn.style.background = "#8e8e93";
-}
+document.getElementById("childPlus").onclick = () => { children++; update(); };
+document.getElementById("childMinus").onclick = () => { if(children>0) children--; update(); };
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (isSubmitting) return;
-  isSubmitting = true;
 
-  message.innerText = "";
+  const data = new FormData(form);
+  data.append("date", new Date().toISOString().split("T")[0]);
 
-  const formData = new FormData(form);
-
-  const now = new Date();
-  const date = now.toISOString().split("T")[0];
-  formData.append("date", date);
-
-  btn.disabled = true;
-  btn.innerHTML = "Registering <span class='dot'>...</span>";
+  msg.innerText = "Submitting...";
 
   try {
     const res = await fetch(sheetURL, {
       method: "POST",
-      body: formData
+      body: data
     });
 
     const text = await res.text();
 
     if (text === "DUPLICATE") {
-      message.innerText = "Already registered";
-      message.style.color = "#ff3b30";
-      lockForm();
+      msg.innerText = "Already registered";
+      msg.style.color = "#ef4444";
       return;
     }
 
     if (text === "Success") {
-      message.innerText = "✓ Registered successfully";
-      message.style.color = "#34c759";
-
+      msg.innerText = "Check-in successful ✓";
+      msg.style.color = "#22c55e";
       form.reset();
       adults = 1;
       children = 0;
-      updateUI();
-    } else {
-      message.innerText = text;
+      update();
     }
 
   } catch (err) {
-    message.innerText = "Network error";
-    message.style.color = "#ff3b30";
+    msg.innerText = "Network error";
+    msg.style.color = "#ef4444";
   }
-
-  btn.disabled = false;
-  btn.innerText = "Register";
-  isSubmitting = false;
 });
 </script>
 
