@@ -130,18 +130,18 @@ input::placeholder{color:#aaa}
 
 <div class="disclaimer">
 We collect your name and contact details solely for event attendance management and emergency purposes. 
-Your data will be stored securely and will not be shared with third parties.By checking in, you consent to this use of your information
+Your data will be stored securely and will not be shared with third parties. By checking in, you consent to this use of your information.
 </div>
 
 </div>
 
 <script>
-
 const API_URL = "https://script.google.com/macros/s/AKfycbwP9AHZOr_zh4Snb4k4WLJ81xEl2tyAnd-DrIp-8yTDZilrB6KnnyNc5h2odO5pymgP/exec";
 
-let selectedAdults=0;
-let selectedChildren=0;
-let lastTotal=0;
+let selectedAdults = 0;
+let selectedChildren = 0;
+let lastTotal = 0;
+let submitting = false;
 
 // ADMIN MODE
 function isAdmin(){
@@ -150,10 +150,10 @@ function isAdmin(){
 
 // UK WEEK
 function getWeek(){
-  const d=new Date();
+  const d = new Date();
   d.setHours(0,0,0,0);
   d.setDate(d.getDate()+4-(d.getDay()||7));
-  const y=new Date(d.getFullYear(),0,1);
+  const y = new Date(d.getFullYear(),0,1);
   return Math.ceil((((d-y)/86400000)+1)/7);
 }
 
@@ -171,37 +171,43 @@ function msg(t){
   document.getElementById("msg").innerText=t;
 }
 
+// RESET FORM
+function resetForm(){
+  document.getElementById("form").reset();
+  document.querySelectorAll(".btn").forEach(b => b.classList.remove("active"));
+  selectedAdults = 0;
+  selectedChildren = 0;
+}
+
 // LOAD COUNTS
 function loadCounts(){
   if(!isAdmin()) return;
 
   fetch(API_URL)
-  .then(r=>r.json())
-  .then(data=>{
-    let a=0,c=0;
+    .then(r=>r.json())
+    .then(data=>{
+      let a=0,c=0;
+      data.forEach(x=>{
+        a+=Number(x.adults||0);
+        c+=Number(x.children||0);
+      });
 
-    data.forEach(x=>{
-      a+=Number(x.adults||0);
-      c+=Number(x.children||0);
-    });
-
-    const total=a+c;
-
-    if(total!==lastTotal){
-      document.getElementById("adults").innerText=a;
-      document.getElementById("children").innerText=c;
-      document.getElementById("total").innerText=total;
-
-      animate();
-      lastTotal=total;
-    }
-  });
+      const total = a+c;
+      if(total !== lastTotal){
+        document.getElementById("adults").innerText = a;
+        document.getElementById("children").innerText = c;
+        document.getElementById("total").innerText = total;
+        animate();
+        lastTotal = total;
+      }
+    })
+    .catch(err => console.error("Error loading counts:", err));
 }
 
 // ANIMATION
 function animate(){
-  const box=document.getElementById("statsBox");
-  box.style.transform="scale(1.05)";
+  const box = document.getElementById("statsBox");
+  box.style.transform = "scale(1.05)";
   setTimeout(()=>box.style.transform="scale(1)",200);
 }
 
@@ -209,74 +215,67 @@ function animate(){
 setInterval(loadCounts,10000);
 
 // SUBMIT
-document.getElementById("form").onsubmit=function(e){
+document.getElementById("form").onsubmit = function(e){
   e.preventDefault();
+  if(submitting) return;
+  submitting = true;
 
-  const name=document.getElementById("name").value.trim();
-  const email=document.getElementById("email").value.trim().toLowerCase();
-  const phone=document.getElementById("phone").value.trim();
-
-  const uk=/^(?:\+44|0)7\d{9}$/;
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const phone = document.getElementById("phone").value.trim();
+  const uk = /^(?:\+44|0)7\d{9}$/;
 
   if(!name) return msg("Enter name");
   if(!uk.test(phone)) return msg("Invalid UK phone");
   if(!selectedAdults && !selectedChildren) return msg("Select group");
 
-fetch(API_URL)
-.then(r => r.json())
-.then(data => {
+  // Check duplicates
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      const duplicate = data.some(x =>
+        (x.email && x.email.toLowerCase() === email) ||
+        (x.phone && x.phone === phone)
+      );
 
-  const duplicate = data.some(x =>
-    (x.email && x.email.toLowerCase() === email) ||
-    (x.phone && x.phone === phone)
-  );
+      if (duplicate){
+        msg("Already checked in");
+        submitting = false;
+        return;
+      }
 
-  if (duplicate) {
-    msg("Already checked in");
-    return;
-  }
-
-  // 🔽 move your existing POST fetch here
-  
-  fetch(API_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-      data: [{
-        name,
-        email,
-        phone,
-        adults: selectedAdults,
-        children: selectedChildren,
-        time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
-        week: getWeek()
-      }]
+      // Send POST request
+      return fetch(API_URL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          data:[{
+            name, email, phone,
+            adults: selectedAdults,
+            children: selectedChildren,
+            time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
+            week: getWeek()
+          }]
+        })
+      })
+      .then(() => {
+        msg("Checked in successfully");
+        resetForm();
+        setTimeout(loadCounts, 500);
+      })
+      .catch(()=> msg("Error submitting"))
+      .finally(()=> submitting = false);
     })
-  })
-  .then(() => {
-    msg("Checked in successfully");
-   setTimeout(loadCounts, 500);
-    document.getElementById("form").reset();
-    document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
-    selectedAdults=0;
-    selectedChildren=0;
-  })
-  .catch(() => {
-    msg("Error submitting");
-  });
-
-}; // ✅ FIXED
+    .catch(()=> { msg("Error fetching existing data"); submitting=false; });
+};
 
 // INIT
-window.onload=function(){
+window.onload = function(){
   if(isAdmin()){
     document.getElementById("statsBox").style.display="block";
     loadCounts();
   }
 };
-
 </script>
 
 </body>
