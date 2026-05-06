@@ -64,12 +64,6 @@ input::placeholder{color:#aaa}
   transform:scale(1.05);
 }
 
-#msg{
-  text-align:center;
-  margin:10px 0;
-  font-size:13px;
-}
-
 #submitBtn{
   width:100%;
   padding:14px;
@@ -81,12 +75,17 @@ input::placeholder{color:#aaa}
   cursor:pointer;
 }
 
+#msg{
+  text-align:center;
+  margin:10px 0;
+  font-size:13px;
+}
+
 .stats{
   display:none;
   text-align:center;
   margin-bottom:15px;
   font-size:14px;
-  opacity:0.9;
 }
 
 .disclaimer{
@@ -118,10 +117,10 @@ input::placeholder{color:#aaa}
   <input id="phone" placeholder="UK Phone (07123456789)" required>
 
   <div class="button-grid">
-    <button type="button" class="btn" onclick="selectGroup(event,1,0)">1A</button>
-    <button type="button" class="btn" onclick="selectGroup(event,2,0)">2A</button>
-    <button type="button" class="btn" onclick="selectGroup(event,1,1)">1A+1C</button>
-    <button type="button" class="btn" onclick="selectGroup(event,1,2)">1A+2C</button>
+    <button type="button" class="btn" onclick="selectGroup(event,1,0)">1 Adult</button>
+    <button type="button" class="btn" onclick="selectGroup(event,2,0)">2 Adults</button>
+    <button type="button" class="btn" onclick="selectGroup(event,1,1)">1A + 1C</button>
+    <button type="button" class="btn" onclick="selectGroup(event,1,2)">1A + 2C</button>
   </div>
 
   <div id="msg"></div>
@@ -130,19 +129,21 @@ input::placeholder{color:#aaa}
 </form>
 
 <div class="disclaimer">
-Data is used only for event attendance & safety.
+We collect your name and contact details solely for event attendance management and emergency purposes. 
+Your data will be stored securely and will not be shared with third parties.By checking in, you consent to this use of your information
 </div>
 
 </div>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwiAMAFfE52wzWvk3rCfogqwm-hwL-9jVvvm1Mo1aooeYVPnve9-G-g0CSst9f972Qr3Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbydeuh4895nqRI6fGpcZhFd8NaHqZ1Gw1WBmCjzIJKuaVCmmEIzU936wvYBDnMJ9ATe/exec";
 
-let selectedAdults = 0;
-let selectedChildren = 0;
+let selectedAdults=0;
+let selectedChildren=0;
+let lastTotal=0;
 
-// ADMIN CHECK
+// ADMIN MODE
 function isAdmin(){
   return new URLSearchParams(window.location.search).get("admin")==="true";
 }
@@ -156,7 +157,7 @@ function getWeek(){
   return Math.ceil((((d-y)/86400000)+1)/7);
 }
 
-// GROUP SELECT
+// SELECT GROUP
 function selectGroup(e,a,c){
   selectedAdults=a;
   selectedChildren=c;
@@ -170,7 +171,7 @@ function msg(t){
   document.getElementById("msg").innerText=t;
 }
 
-// LOAD STATS (ADMIN ONLY)
+// LOAD COUNTS (AUTO SYNC)
 function loadCounts(){
   if(!isAdmin()) return;
 
@@ -178,30 +179,47 @@ function loadCounts(){
   .then(r=>r.json())
   .then(data=>{
     let a=0,c=0;
+
     data.forEach(x=>{
       a+=Number(x.adults||0);
       c+=Number(x.children||0);
     });
 
-    adults.innerText=a;
-    children.innerText=c;
-    total.innerText=a+c;
+    const total=a+c;
+
+    if(total!==lastTotal){
+      document.getElementById("adults").innerText=a;
+      document.getElementById("children").innerText=c;
+      document.getElementById("total").innerText=total;
+
+      animate();
+      lastTotal=total;
+    }
   });
 }
 
-// AUTO REFRESH EVERY 30 SECONDS
-setInterval(loadCounts,30000);
+// ANIMATION
+function animate(){
+  const box=document.getElementById("statsBox");
+  box.style.transform="scale(1.05)";
+  setTimeout(()=>box.style.transform="scale(1)",200);
+}
+
+// AUTO REFRESH (10s)
+setInterval(loadCounts,10000);
 
 // SUBMIT
 document.getElementById("form").onsubmit=function(e){
   e.preventDefault();
 
-  const name=nameInput.value.trim();
-  const email=emailInput.value.trim().toLowerCase();
-  const phone=phoneInput.value.trim();
+  const name=document.getElementById("name").value.trim();
+  const email=document.getElementById("email").value.trim().toLowerCase();
+  const phone=document.getElementById("phone").value.trim();
 
   const uk=/^(?:\+44|0)7\d{9}$/;
-  if(!uk.test(phone)) return msg("Invalid UK number");
+
+  if(!name) return msg("Enter name");
+  if(!uk.test(phone)) return msg("Invalid UK phone");
   if(!selectedAdults && !selectedChildren) return msg("Select group");
 
   fetch(API_URL,{
@@ -214,14 +232,22 @@ document.getElementById("form").onsubmit=function(e){
         phone,
         adults:selectedAdults,
         children:selectedChildren,
-        time:new Date().toLocaleString("en-GB"),
+        time:new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
         week:getWeek()
       }]
     })
   })
-  .then(()=>msg("Checked in successfully"))
-  .catch(()=>msg("Error"));
-}
+  .then(()=>{
+    msg("Checked in successfully");
+    loadCounts(); // instant update
+
+    document.getElementById("form").reset();
+    document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
+    selectedAdults=0;
+    selectedChildren=0;
+  })
+  .catch(()=>msg("Error submitting"));
+};
 
 // INIT
 window.onload=function(){
@@ -230,10 +256,6 @@ window.onload=function(){
     loadCounts();
   }
 };
-
-const nameInput=document.getElementById("name");
-const emailInput=document.getElementById("email");
-const phoneInput=document.getElementById("phone");
 
 </script>
 
