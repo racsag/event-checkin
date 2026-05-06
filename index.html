@@ -222,32 +222,28 @@ document.getElementById("form").onsubmit=function(e){
   if(!uk.test(phone)) return msg("Invalid UK phone");
   if(!selectedAdults && !selectedChildren) return msg("Select group");
 
-  fetch(API_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json"},
-    body:JSON.stringify({
-      data:[{
-        name,
-        email,
-        phone,
-        adults:selectedAdults,
-        children:selectedChildren,
-        time:new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
-        week:getWeek()
-      }]
-    })
+fetch(API_URL, {
+  method: "POST",
+  mode: "no-cors",   // 🔥 fixes your error
+  body: JSON.stringify({
+    data: [{
+      name,
+      email,
+      phone,
+      adults: selectedAdults,
+      children: selectedChildren,
+      time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
+      week: getWeek()
+    }]
   })
-  .then(()=>{
-    msg("Checked in successfully");
-    loadCounts(); // instant update
-
-    document.getElementById("form").reset();
-    document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
-    selectedAdults=0;
-    selectedChildren=0;
-  })
-  .catch(()=>msg("Error submitting"));
-};
+})
+.then(() => {
+  msg("Checked in successfully");
+  loadCounts();
+})
+.catch(() => {
+  msg("Error submitting");
+});
 
 // INIT
 window.onload=function(){
