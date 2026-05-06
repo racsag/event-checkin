@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> Aylesbury HSS Shakha </title>
+<style>
+body { font-family:'Segoe UI', sans-serif; background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
+.container { background:white; padding:30px; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.2); width:90%; max-width:400px; }
+h2 { text-align:center; color:#333; margin-bottom:20px; }
+label { display:block; margin-top:10px; font-weight:500; }
+input { width:100%; padding:10px; margin-top:5px; border-radius:10px; border:1px solid #ccc; font-size:16px; }
+.counter { display:flex; align-items:center; justify-content:space-between; margin-top:5px; }
+.counter button { width:45px; height:45px; border:none; border-radius:50%; background:#4CAF50; color:white; font-size:20px; cursor:pointer; transition:0.2s; }
+.counter button:hover { background:#45a049; }
+.counter span { font-size:18px; min-width:30px; text-align:center; display:inline-block; }
+#submitBtn { width:100%; padding:14px; margin-top:20px; border:none; border-radius:12px; background:#2196F3; color:white; font-size:16px; cursor:pointer; transition:0.3s; }
+#submitBtn.clicked { background:#0b7dda; }
+p#message { text-align:center; margin-top:15px; font-weight:bold; color:#333; }
+p#disclaimer { font-size:12px; color:#555; margin-top:20px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Aylesbury HSS Shakha</h2>
+<form id="eventForm">
+<label>Name *</label>
+<input type="text" name="name" required>
+
+<label>Phone (UK) *</label>
+<input type="tel" name="phone" required placeholder="e.g. 07123456789 or +447123456789" pattern="^(?:0|\+44)\d{9,10}$">
+
+<label>Email (optional)</label>
+<input type="email" name="email" placeholder="Optional">
+
+<label>Adults</label>
+<div class="counter">
+  <button type="button" id="adultMinus">-</button>
+  <span id="adultCountDisplay">1</span>
+  <button type="button" id="adultPlus">+</button>
+</div>
+<input type="hidden" name="adults" id="adultCount" value="1">
+
+<label>Children</label>
+<div class="counter">
+  <button type="button" id="childMinus">-</button>
+  <span id="childCountDisplay">0</span>
+  <button type="button" id="childPlus">+</button>
+</div>
+<input type="hidden" name="children" id="childCount" value="0">
+
+<button type="submit" id="submitBtn">Submit</button>
+</form>
+<p id="message"></p>
+<p id="disclaimer">By submitting, you agree that your data will be stored securely for event registration purposes only. No personal information will be shared publicly.</p>
+</div>
+
+<script>
+const sheetURL = "https://script.google.com/macros/s/AKfycbyej2xFY2Kasnd_efxtd_kswyajrrcZ4XVmOymhK9w2DPwonbsW6tVdeQaAsza2C_3T/exec"; // Paste your Apps Script URL
+const form = document.getElementById('eventForm');
+const submitBtn = document.getElementById('submitBtn');
+
+// Counters
+let adults=1, children=0;
+const adultCount = document.getElementById('adultCount');
+const adultDisplay = document.getElementById('adultCountDisplay');
+document.getElementById('adultPlus').addEventListener('click',()=>{adults++; adultDisplay.innerText=adults; adultCount.value=adults;});
+document.getElementById('adultMinus').addEventListener('click',()=>{if(adults>1) {adults--; adultDisplay.innerText=adults; adultCount.value=adults;}});
+const childCountInput = document.getElementById('childCount');
+const childDisplay = document.getElementById('childCountDisplay');
+document.getElementById('childPlus').addEventListener('click',()=>{children++; childDisplay.innerText=children; childCountInput.value=children;});
+document.getElementById('childMinus').addEventListener('click',()=>{if(children>0){children--; childDisplay.innerText=children; childCountInput.value=children;}});
+
+// Submit
+form.addEventListener('submit', async(e)=>{
+e.preventDefault();
+const name=form['name'].value.trim();
+const phone=form['phone'].value.trim();
+const email=form['email'].value.trim();
+if(!name){document.getElementById('message').innerText="Name is required";return;}
+if(!/^(?:0|\+44)\d{9,10}$/.test(phone)){document.getElementById('message').innerText="Invalid UK phone number";return;}
+
+// Auto timestamp
+const timestamp=new Date();
+const date=timestamp.getDate().toString().padStart(2,'0')+'/'+(timestamp.getMonth()+1).toString().padStart(2,'0')+'/'+timestamp.getFullYear();
+const time=timestamp.getHours().toString().padStart(2,'0')+':'+timestamp.getMinutes().toString().padStart(2,'0');
+const hiddenDate=document.createElement('input'); hiddenDate.type='hidden'; hiddenDate.name='date'; hiddenDate.value=date;
+const hiddenTime=document.createElement('input'); hiddenTime.type='hidden'; hiddenTime.name='time'; hiddenTime.value=time;
+form.appendChild(hiddenDate); form.appendChild(hiddenTime);
+
+submitBtn.classList.add('clicked');
+try{
+  const res=await fetch(sheetURL,{method:'POST', body:new URLSearchParams(new FormData(form))});
+  const text=await res.text();
+  document.getElementById('message').innerText=text;
+  if(text==="Success"){
+    // Auto-refresh after 1 second
+    setTimeout(()=>{window.location.reload();},1000);
+  }
+}catch(err){
+  document.getElementById('message').innerText="Error submitting form.";
+}
+setTimeout(()=>submitBtn.classList.remove('clicked'),1000);
+});
+</script>
+</body>
+</html>
