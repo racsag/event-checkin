@@ -16,7 +16,6 @@ body{
   padding:20px;
   color:#fff;
 }
-
 .container{
   width:100%;
   max-width:420px;
@@ -26,10 +25,8 @@ body{
   border-radius:24px;
   border:1px solid rgba(255,255,255,0.15);
 }
-
 h1{text-align:center;margin-bottom:5px}
 .subtitle{text-align:center;opacity:0.7;margin-bottom:20px}
-
 input{
   width:100%;
   padding:12px;
@@ -39,16 +36,13 @@ input{
   background:rgba(255,255,255,0.05);
   color:#fff;
 }
-
 input::placeholder{color:#aaa}
-
 .button-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
   margin:15px 0;
 }
-
 .btn{
   padding:12px;
   border-radius:14px;
@@ -58,12 +52,10 @@ input::placeholder{color:#aaa}
   cursor:pointer;
   transition:0.2s;
 }
-
 .btn.active{
   background:#22c55e;
   transform:scale(1.05);
 }
-
 #submitBtn{
   width:100%;
   padding:14px;
@@ -74,20 +66,17 @@ input::placeholder{color:#aaa}
   font-weight:bold;
   cursor:pointer;
 }
-
 #msg{
   text-align:center;
   margin:10px 0;
   font-size:13px;
 }
-
 .stats{
   display:none;
   text-align:center;
   margin-bottom:15px;
   font-size:14px;
 }
-
 .disclaimer{
   margin-top:15px;
   font-size:11px;
@@ -96,7 +85,6 @@ input::placeholder{color:#aaa}
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -124,7 +112,6 @@ input::placeholder{color:#aaa}
   </div>
 
   <div id="msg"></div>
-
   <button id="submitBtn">Complete Check-In</button>
 </form>
 
@@ -136,12 +123,11 @@ Your data will be stored securely and will not be shared with third parties. By 
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwz5WPACQVDcjAEU6txCtcHGR3C9tRcnm5zXBkS5KNtJc8jFJV6H9Ply3No09O4_-4-/exec";
+const API_URL = "YOUR_DEPLOYED_WEB_APP_URL_HERE";
 
 let selectedAdults = 0;
 let selectedChildren = 0;
 let lastTotal = 0;
-let submitting = false;
 
 // ADMIN MODE
 function isAdmin(){
@@ -161,20 +147,19 @@ function getWeek(){
 function selectGroup(e,a,c){
   selectedAdults=a;
   selectedChildren=c;
-
   document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
   e.currentTarget.classList.add("active");
 }
 
 // MESSAGE
 function msg(t){
-  document.getElementById("msg").innerText=t;
+  document.getElementById("msg").innerText = t;
 }
 
 // RESET FORM
 function resetForm(){
   document.getElementById("form").reset();
-  document.querySelectorAll(".btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
   selectedAdults = 0;
   selectedChildren = 0;
 }
@@ -182,7 +167,6 @@ function resetForm(){
 // LOAD COUNTS
 function loadCounts(){
   if(!isAdmin()) return;
-
   fetch(API_URL)
     .then(r=>r.json())
     .then(data=>{
@@ -191,7 +175,6 @@ function loadCounts(){
         a+=Number(x.adults||0);
         c+=Number(x.children||0);
       });
-
       const total = a+c;
       if(total !== lastTotal){
         document.getElementById("adults").innerText = a;
@@ -217,8 +200,6 @@ setInterval(loadCounts,10000);
 // SUBMIT
 document.getElementById("form").onsubmit = function(e){
   e.preventDefault();
-  if(submitting) return;
-  submitting = true;
 
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim().toLowerCase();
@@ -229,44 +210,27 @@ document.getElementById("form").onsubmit = function(e){
   if(!uk.test(phone)) return msg("Invalid UK phone");
   if(!selectedAdults && !selectedChildren) return msg("Select group");
 
-  // Check duplicates
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(data => {
-      const duplicate = data.some(x =>
-        (x.email && x.email.toLowerCase() === email) ||
-        (x.phone && x.phone === phone)
-      );
-
-      if (duplicate){
-        msg("Already checked in");
-        submitting = false;
-        return;
-      }
-
-      // Send POST request
-      return fetch(API_URL, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          data:[{
-            name, email, phone,
-            adults: selectedAdults,
-            children: selectedChildren,
-            time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
-            week: getWeek()
-          }]
-        })
-      })
-      .then(() => {
-        msg("Checked in successfully");
-        resetForm();
-        setTimeout(loadCounts, 500);
-      })
-      .catch(()=> msg("Error submitting"))
-      .finally(()=> submitting = false);
+  // Use no-cors because GitHub Pages → Apps Script is cross-origin
+  fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      data: [{
+        name, email, phone,
+        adults: selectedAdults,
+        children: selectedChildren,
+        time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
+        week: getWeek()
+      }]
     })
-    .catch(()=> { msg("Error fetching existing data"); submitting=false; });
+  })
+  .then(()=> {
+    msg("Checked in successfully (duplicates prevented server-side)");
+    resetForm();
+    setTimeout(loadCounts, 500);
+  })
+  .catch(()=> msg("Error submitting"));
 };
 
 // INIT
@@ -277,6 +241,5 @@ window.onload = function(){
   }
 };
 </script>
-
 </body>
 </html>
