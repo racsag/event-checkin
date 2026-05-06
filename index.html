@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Check-In</title>
+<title>Event Check-In</title>
 
 <style>
 body {
@@ -41,7 +41,6 @@ h2 {
   margin-bottom: 18px;
 }
 
-/* INPUTS */
 input {
   width: 100%;
   padding: 12px 14px;
@@ -57,7 +56,7 @@ input::placeholder {
   color: rgba(255,255,255,0.4);
 }
 
-/* COUNTER (your original style) */
+/* Counter */
 .counter {
   display: flex;
   justify-content: space-between;
@@ -74,20 +73,14 @@ input::placeholder {
   color: white;
   font-size: 18px;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-.counter button:active {
-  transform: scale(0.95);
 }
 
 .counter span {
   font-size: 16px;
-  font-weight: 500;
 }
 
-/* SUBMIT BUTTON (Apple style) */
-button#submitBtn {
+/* Button */
+button {
   width: 100%;
   margin-top: 18px;
   padding: 14px;
@@ -98,10 +91,6 @@ button#submitBtn {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-}
-
-button:active {
-  transform: scale(0.97);
 }
 
 #message {
@@ -123,64 +112,57 @@ button:active {
 
 <div class="container">
 
-  <h2>Check-In</h2>
-  <div class="subtitle">Welcome to the Shakha</div>
+<h2>Event Check-In</h2>
+<div class="subtitle">Welcome</div>
 
-  <form id="form">
+<form id="form">
 
-    <input name="name" placeholder="Full Name *" required>
-    <input name="email" placeholder="Email (optional)">
-    <input name="phone" placeholder="UK Phone * (07123456789)" required>
+<input name="name" placeholder="Full Name" required>
+<input name="phone" placeholder="Phone Number" required>
+<input name="email" placeholder="Email (optional)">
 
-    <!-- COUNTERS -->
-    <label>Adults</label>
-    <div class="counter">
-      <button type="button" id="adultMinus">-</button>
-      <span id="adultCountDisplay">1</span>
-      <button type="button" id="adultPlus">+</button>
-    </div>
-    <input type="hidden" name="adults" id="adults" value="1">
+<!-- Adults -->
+<label>Adults</label>
+<div class="counter">
+  <button type="button" onclick="adults--,update()">-</button>
+  <span id="adultCount">1</span>
+  <button type="button" onclick="adults++,update()">+</button>
+</div>
 
-    <label>Children</label>
-    <div class="counter">
-      <button type="button" id="childMinus">-</button>
-      <span id="childCountDisplay">0</span>
-      <button type="button" id="childPlus">+</button>
-    </div>
-    <input type="hidden" name="children" id="children" value="0">
+<!-- Children -->
+<label>Children</label>
+<div class="counter">
+  <button type="button" onclick="children--,update()">-</button>
+  <span id="childCount">0</span>
+  <button type="button" onclick="children++,update()">+</button>
+</div>
 
-    <button type="submit" id="submitBtn">Complete Check-In</button>
+<button type="submit">Submit</button>
 
-    <div id="message"></div>
+<div id="message"></div>
 
-    <div class="footer">
-     We collect your name and contact details solely for event attendance management and emergency purposes. Your data will be stored securely and will not be shared with third parties. By checking in, you consent to this use of your information.
-    </div>
+</form>
 
-  </form>
+<div class="footer">
+Data used only for event registration
+</div>
 
 </div>
 
 <script>
-
-const form = document.getElementById("form");
-const msg = document.getElementById("message");
-
 let adults = 1;
 let children = 0;
 
 function update() {
-  document.getElementById("adultCountDisplay").innerText = adults;
-  document.getElementById("childCountDisplay").innerText = children;
-  document.getElementById("adults").value = adults;
-  document.getElementById("children").value = children;
+  if (adults < 1) adults = 1;
+  if (children < 0) children = 0;
+  document.getElementById("adultCount").innerText = adults;
+  document.getElementById("childCount").innerText = children;
 }
+update();
 
-document.getElementById("adultPlus").onclick = () => { adults++; update(); };
-document.getElementById("adultMinus").onclick = () => { if(adults>1) adults--; update(); };
-
-document.getElementById("childPlus").onclick = () => { children++; update(); };
-document.getElementById("childMinus").onclick = () => { if(children>0) children--; update(); };
+const form = document.getElementById("form");
+const msg = document.getElementById("message");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -189,8 +171,8 @@ form.addEventListener("submit", async (e) => {
     name: form.name.value,
     phone: form.phone.value,
     email: form.email.value,
-    adults: adults,
-    children: children,
+    adults,
+    children,
     date: new Date().toISOString().split("T")[0]
   };
 
@@ -204,37 +186,16 @@ form.addEventListener("submit", async (e) => {
 
   const data = await res.json();
 
-  const msg = document.getElementById("message");
-
   if (data.result === "DUPLICATE") {
     msg.innerText = "Already registered";
     msg.style.color = "#ff3b30";
   } else {
-    msg.innerText = "Check-in successful ✓";
+    msg.innerText = "Registration successful ✓";
     msg.style.color = "#34c759";
-  }
-});
-
-    const text = await res.text();
-
-    if (text === "DUPLICATE") {
-      msg.innerText = "Already registered";
-      msg.style.color = "#ef4444";
-      return;
-    }
-
-    if (text === "Success") {
-      msg.innerText = "Check-in successful ✓";
-      msg.style.color = "#22c55e";
-      form.reset();
-      adults = 1;
-      children = 0;
-      update();
-    }
-
-  } catch (err) {
-    msg.innerText = "Network error";
-    msg.style.color = "#ef4444";
+    form.reset();
+    adults = 1;
+    children = 0;
+    update();
   }
 });
 </script>
