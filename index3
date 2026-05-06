@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Check-In</title>
+
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+  color:#fff;
+}
+
+.container{
+  width:100%;
+  max-width:420px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  padding:25px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+
+h1{text-align:center;margin-bottom:5px}
+.subtitle{text-align:center;opacity:0.7;margin-bottom:20px}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+}
+
+input::placeholder{color:#aaa}
+
+.button-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:15px 0;
+}
+
+.btn{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btn.active{
+  background:#22c55e;
+  transform:scale(1.05);
+}
+
+#submitBtn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#3b82f6;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#msg{
+  text-align:center;
+  margin:10px 0;
+  font-size:13px;
+}
+
+.stats{
+  display:none;
+  text-align:center;
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+.disclaimer{
+  margin-top:15px;
+  font-size:11px;
+  opacity:0.6;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Check-In</h1>
+<div class="subtitle">Welcome to the event</div>
+
+<!-- ADMIN ONLY -->
+<div class="stats" id="statsBox">
+  Adults: <span id="adults">0</span> |
+  Children: <span id="children">0</span> |
+  Total: <span id="total">0</span>
+</div>
+
+<form id="form">
+  <input id="name" placeholder="Full Name *" required>
+  <input id="email" placeholder="Email (optional)">
+  <input id="phone" placeholder="UK Phone (07123456789)" required>
+
+  <div class="button-grid">
+    <button type="button" class="btn" onclick="selectGroup(event,1,0)">1 Adult</button>
+    <button type="button" class="btn" onclick="selectGroup(event,2,0)">2 Adults</button>
+    <button type="button" class="btn" onclick="selectGroup(event,1,1)">1A + 1C</button>
+    <button type="button" class="btn" onclick="selectGroup(event,1,2)">1A + 2C</button>
+  </div>
+
+  <div id="msg"></div>
+
+  <button id="submitBtn">Complete Check-In</button>
+</form>
+
+<div class="disclaimer">
+We collect your name and contact details solely for event attendance management and emergency purposes. 
+Your data will be stored securely and will not be shared with third parties.By checking in, you consent to this use of your information
+</div>
+
+</div>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwP9AHZOr_zh4Snb4k4WLJ81xEl2tyAnd-DrIp-8yTDZilrB6KnnyNc5h2odO5pymgP/exec";
+
+let selectedAdults=0;
+let selectedChildren=0;
+let lastTotal=0;
+
+// ADMIN MODE
+function isAdmin(){
+  return new URLSearchParams(window.location.search).get("admin")==="true";
+}
+
+// UK WEEK
+function getWeek(){
+  const d=new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+4-(d.getDay()||7));
+  const y=new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-y)/86400000)+1)/7);
+}
+
+// SELECT GROUP
+function selectGroup(e,a,c){
+  selectedAdults=a;
+  selectedChildren=c;
+
+  document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
+  e.currentTarget.classList.add("active");
+}
+
+// MESSAGE
+function msg(t){
+  document.getElementById("msg").innerText=t;
+}
+
+// LOAD COUNTS
+function loadCounts(){
+  if(!isAdmin()) return;
+
+  fetch(API_URL)
+  .then(r=>r.json())
+  .then(data=>{
+    let a=0,c=0;
+
+    data.forEach(x=>{
+      a+=Number(x.adults||0);
+      c+=Number(x.children||0);
+    });
+
+    const total=a+c;
+
+    if(total!==lastTotal){
+      document.getElementById("adults").innerText=a;
+      document.getElementById("children").innerText=c;
+      document.getElementById("total").innerText=total;
+
+      animate();
+      lastTotal=total;
+    }
+  });
+}
+
+// ANIMATION
+function animate(){
+  const box=document.getElementById("statsBox");
+  box.style.transform="scale(1.05)";
+  setTimeout(()=>box.style.transform="scale(1)",200);
+}
+
+// AUTO REFRESH
+setInterval(loadCounts,10000);
+
+// SUBMIT
+document.getElementById("form").onsubmit=function(e){
+  e.preventDefault();
+
+  const name=document.getElementById("name").value.trim();
+  const email=document.getElementById("email").value.trim().toLowerCase();
+  const phone=document.getElementById("phone").value.trim();
+
+  const uk=/^(?:\+44|0)7\d{9}$/;
+
+  if(!name) return msg("Enter name");
+  if(!uk.test(phone)) return msg("Invalid UK phone");
+  if(!selectedAdults && !selectedChildren) return msg("Select group");
+
+fetch(API_URL)
+.then(r => r.json())
+.then(data => {
+
+  const duplicate = data.some(x =>
+    (x.email && x.email.toLowerCase() === email) ||
+    (x.phone && x.phone === phone)
+  );
+
+  if (duplicate) {
+    msg("Already checked in");
+    return;
+  }
+
+  // 🔽 move your existing POST fetch here
+  
+  fetch(API_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+      data: [{
+        name,
+        email,
+        phone,
+        adults: selectedAdults,
+        children: selectedChildren,
+        time: new Date().toLocaleString("en-GB",{timeZone:"Europe/London"}),
+        week: getWeek()
+      }]
+    })
+  })
+  .then(() => {
+    msg("Checked in successfully");
+   setTimeout(loadCounts, 500);
+    document.getElementById("form").reset();
+    document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
+    selectedAdults=0;
+    selectedChildren=0;
+  })
+  .catch(() => {
+    msg("Error submitting");
+  });
+
+}; // ✅ FIXED
+
+// INIT
+window.onload=function(){
+  if(isAdmin()){
+    document.getElementById("statsBox").style.display="block";
+    loadCounts();
+  }
+};
+
+</script>
+
+</body>
+</html>
