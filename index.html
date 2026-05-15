@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Check-In</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .stats {
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .big-number {
+      font-size: 34px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .small-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    input {
+      width: 90%;
+      max-width: 400px;
+      padding: 15px;
+      margin: 10px auto;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      display: block;
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 90%;
+      max-width: 400px;
+      padding: 18px;
+      margin: 10px auto;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      color: white;
+      background: #4CAF50;
+      cursor: pointer;
+      display: block;
+    }
+
+    .btn:hover {
+      opacity: 0.95;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .reset-btn {
+      background: #666;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Event Check-In</h1>
+
+  <div class="stats">
+    <div>Total Attendance</div>
+    <div class="big-number" id="total">0</div>
+
+    <div class="small-stats">
+      <div>🧑 Adults: <span id="adults">0</span></div>
+      <div>🧒 Kids: <span id="children">0</span></div>
+    </div>
+  </div>
+
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="tel" id="phone" placeholder="Emergency Contact">
+
+  <h3>Select Group Size</h3>
+
+  <button class="btn" onclick="checkIn(1,0)">👤 1 Adult</button>
+
+  <button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
+
+  <button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Child</button>
+
+  <button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
+
+  <button class="btn" onclick="checkIn(2,3)">👨‍👩‍👧‍👧‍👦 2 Adults + 3 Children</button>
+
+  <button class="btn reset-btn" onclick="resetDetails()">
+    🔄 Reset Saved Details
+  </button>
+
+  <p id="msg"></p>
+
+<script>
+
+  // ==============================
+  // 🔗 REPLACE WITH YOUR SHEETDB URL
+  // ==============================
+  const API_URL = "YOUR_SHEETDB_API_URL_HERE";
+
+  // ==============================
+  // 🚀 LOAD SAVED DETAILS
+  // ==============================
+  window.onload = function() {
+
+    document.getElementById("name").value =
+      localStorage.getItem("name") || "";
+
+    document.getElementById("email").value =
+      localStorage.getItem("email") || "";
+
+    document.getElementById("phone").value =
+      localStorage.getItem("phone") || "";
+
+    loadCounts();
+  };
+
+  // ==============================
+  // 📅 GET WEEK NUMBER
+  // ==============================
+  function getWeekNumber() {
+
+    const d = new Date();
+
+    const start =
+      new Date(d.getFullYear(), 0, 1);
+
+    return Math.ceil(
+      ((d - start) /
+      (7 * 24 * 60 * 60 * 1000))
+    );
+  }
+
+  // ==============================
+  // 📊 LOAD LIVE COUNTS
+  // ==============================
+  function loadCounts() {
+
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+
+        let adults = 0;
+        let children = 0;
+
+        data.forEach(row => {
+
+          adults += Number(row.adults || 0);
+
+          children += Number(row.children || 0);
+        });
+
+        document.getElementById("adults").innerText = adults;
+
+        document.getElementById("children").innerText = children;
+
+        document.getElementById("total").innerText =
+          adults + children;
+      });
+  }
+
+  // Auto refresh every 5 seconds
+  setInterval(loadCounts, 5000);
+
+  // ==============================
+  // ✅ CHECK-IN FUNCTION
+  // ==============================
+  function checkIn(adults, children) {
+
+    const name =
+      document.getElementById("name")
+      .value.trim();
+
+    const email =
+      document.getElementById("email")
+      .value.trim()
+      .toLowerCase();
+
+    const phone =
+      document.getElementById("phone")
+      .value.trim();
+
+    if (!name || !email || !phone) {
+
+      document.getElementById("msg")
+      .innerText =
+      "⚠️ Please fill all details";
+
+      return;
+    }
+
+    const currentWeek = getWeekNumber();
+
+    // ==============================
+    // 🔒 DUPLICATE CHECK
+    // ==============================
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+
+        const alreadyExists =
+          data.some(row =>
+
+            row.email &&
+            row.email.toLowerCase() === email &&
+
+            Number(row.week) === currentWeek
+          );
+
+        if (alreadyExists) {
+
+          document.getElementById("msg")
+          .innerText =
+          "⚠️ Already checked in this week";
+
+          return;
+        }
+
+        // ==============================
+        // 💾 SAVE LOCALLY
+        // ==============================
+        localStorage.setItem("name", name);
+
+        localStorage.setItem("email", email);
+
+        localStorage.setItem("phone", phone);
+
+        // ==============================
+        // 📤 SEND TO SHEETDB
+        // ==============================
+        fetch(API_URL, {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+            "application/json"
+          },
+
+          body: JSON.stringify({
+
+            data: [{
+
+              name: name,
+
+              email: email,
+
+              emergency_contact: phone,
+
+              adults: adults,
+
+              children: children,
+
+              time: new Date().toISOString(),
+
+              week: currentWeek
+
+            }]
+          })
+        })
+
+        .then(() => {
+
+          document.getElementById("msg")
+          .innerText =
+          "✅ Checked in successfully!";
+
+          loadCounts();
+        })
+
+        .catch(() => {
+
+          document.getElementById("msg")
+          .innerText =
+          "❌ Error submitting data";
+        });
+
+      });
+  }
+
+  // ==============================
+  // 🔄 RESET SAVED DETAILS
+  // ==============================
+  function resetDetails() {
+
+    localStorage.clear();
+
+    document.getElementById("name").value = "";
+
+    document.getElementById("email").value = "";
+
+    document.getElementById("phone").value = "";
+
+    document.getElementById("msg")
+    .innerText =
+    "🔄 Saved details cleared";
+  }
+
+  // ==============================
+  // 📱 PWA SERVICE WORKER
+  // ==============================
+  if ("serviceWorker" in navigator) {
+
+    navigator.serviceWorker
+      .register("service-worker.js");
+  }
+
+</script>
+
+</body>
+</html>
