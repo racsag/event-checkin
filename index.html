@@ -167,10 +167,10 @@
     >
 
     <input
-      type="email"
-      id="email"
-      placeholder="Email Address"
-    >
+  type="email"
+  id="email"
+  placeholder="Email Address (Optional)"
+>
 
     <input
       type="tel"
@@ -512,13 +512,13 @@
       document.getElementById("phone")
       .value.trim();
 
-    if (!name || !email || !phone) {
+    if (!name || !phone) {
 
-      document.getElementById("msg")
-        .innerText =
-        "Please fill all details";
+  document.getElementById("msg")
+    .innerText =
+    "Name and phone number are required";
 
-      return;
+  return;
     }
 
     const currentWeek =
