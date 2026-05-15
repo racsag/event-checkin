@@ -1,6 +1,8 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
@@ -29,8 +31,6 @@ body{
   color:white;
 }
 
-/* CARD */
-
 .container{
   width:100%;
   max-width:420px;
@@ -40,6 +40,7 @@ body{
   border:1px solid rgba(255,255,255,0.12);
 
   backdrop-filter:blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 
   border-radius:28px;
 
@@ -63,8 +64,6 @@ h1{
   font-size:14px;
   margin-bottom:26px;
 }
-
-/* INPUTS */
 
 label{
   display:block;
@@ -94,6 +93,10 @@ input{
   transition:0.2s;
 }
 
+input:hover{
+  background:rgba(255,255,255,0.1);
+}
+
 input:focus{
   border-color:#3b82f6;
   background:rgba(255,255,255,0.11);
@@ -102,8 +105,6 @@ input:focus{
 input::placeholder{
   color:rgba(255,255,255,0.35);
 }
-
-/* COUNTERS */
 
 .counterBox{
   margin-top:18px;
@@ -156,8 +157,6 @@ input::placeholder{
   font-weight:600;
 }
 
-/* SUBMIT */
-
 .submitBtn{
   width:100%;
   margin-top:28px;
@@ -184,7 +183,10 @@ input::placeholder{
   box-shadow:0 10px 25px rgba(59,130,246,0.35);
 }
 
-/* MESSAGE */
+.submitBtn:disabled{
+  opacity:0.7;
+  cursor:not-allowed;
+}
 
 #message{
   margin-top:18px;
@@ -192,8 +194,6 @@ input::placeholder{
   font-size:15px;
   font-weight:500;
 }
-
-/* FOOTER */
 
 .footer{
   margin-top:22px;
@@ -219,6 +219,7 @@ Event Registration
 <form id="eventForm">
 
 <label>Full Name *</label>
+
 <input
   type="text"
   id="name"
@@ -227,21 +228,22 @@ Event Registration
 />
 
 <label>Phone Number *</label>
+
 <input
   type="tel"
   id="phone"
   placeholder="07123456789"
+  pattern="[0-9+ ]{10,15}"
   required
 />
 
 <label>Email (Optional)</label>
+
 <input
   type="email"
   id="email"
   placeholder="example@email.com"
 />
-
-<!-- ADULTS -->
 
 <div class="counterBox">
 
@@ -256,10 +258,7 @@ Event Registration
 <button type="button" id="adultPlus">+</button>
 
 </div>
-
 </div>
-
-<!-- CHILDREN -->
 
 <div class="counterBox">
 
@@ -274,7 +273,6 @@ Event Registration
 <button type="button" id="childPlus">+</button>
 
 </div>
-
 </div>
 
 <button class="submitBtn" type="submit">
@@ -292,8 +290,6 @@ Your information is securely stored for event registration purposes only.
 </div>
 
 <script>
-
-/* ---------------- COUNTERS ---------------- */
 
 let adults = 1;
 let children = 0;
@@ -325,14 +321,17 @@ document.getElementById("childMinus").addEventListener("click", () => {
   }
 });
 
-/* ---------------- FORM ---------------- */
-
 const form = document.getElementById("eventForm");
 const message = document.getElementById("message");
 
 form.addEventListener("submit", async (e) => {
 
   e.preventDefault();
+
+  const submitBtn = document.querySelector(".submitBtn");
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Registering...";
 
   const payload = {
 
@@ -344,15 +343,13 @@ form.addEventListener("submit", async (e) => {
 
     adults: adults,
 
-    children: children,
-
-    date: new Date().toISOString().split("T")[0]
+    children: children
   };
 
   try {
 
     const response = await fetch(
-      "https://worker1.racank86.workers.dev",
+      "https://script.google.com/macros/s/AKfycbzxUIUEOxe7HE3stSB5yAzJzepFAl535ZpapV2AE5VW6wuS_prasJvFMN4AW2OrwPxc4g/exec",
       {
         method: "POST",
 
@@ -364,12 +361,21 @@ form.addEventListener("submit", async (e) => {
       }
     );
 
+    if (!response.ok) {
+      throw new Error("Server error");
+    }
+
     const data = await response.json();
 
-    if (data.result === "DUPLICATE") {
+    if (data.status === "duplicate") {
 
       message.innerText = "Already registered";
       message.style.color = "#ff453a";
+
+    } else if (data.status === "waitlist") {
+
+      message.innerText = "Added to waiting list";
+      message.style.color = "#ffd60a";
 
     } else {
 
@@ -391,6 +397,11 @@ form.addEventListener("submit", async (e) => {
 
     message.innerText = "Network error";
     message.style.color = "#ff453a";
+
+  } finally {
+
+    submitBtn.disabled = false;
+    submitBtn.innerText = "Register";
   }
 });
 
@@ -398,3 +409,4 @@ form.addEventListener("submit", async (e) => {
 
 </body>
 </html>
+```
