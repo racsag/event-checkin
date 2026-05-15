@@ -3,133 +3,362 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aylesbury HSS </title>
+  <title>Event Check-In</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4CAF50">
+  <meta name="theme-color" content="#ffffff">
 
   <style>
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
       margin: 0;
       padding: 20px;
+      background: #f2f2f7;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      color: #111;
       text-align: center;
     }
 
+    .container {
+      max-width: 450px;
+      margin: auto;
+    }
+
     h1 {
-      color: #333;
-    }
-
-    .stats {
-      background: white;
-      padding: 15px;
-      border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .big-number {
       font-size: 34px;
-      font-weight: bold;
-      margin: 10px 0;
+      margin-bottom: 20px;
+      font-weight: 700;
     }
 
-    .small-stats {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-      font-size: 18px;
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
     }
 
     input {
-      width: 90%;
-      max-width: 400px;
-      padding: 15px;
-      margin: 10px auto;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      display: block;
+      width: 100%;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-radius: 18px;
+      border: 1px solid #ddd;
       font-size: 16px;
+      box-sizing: border-box;
+      background: #fafafa;
     }
 
-    .btn {
-      width: 90%;
-      max-width: 400px;
+    .counter-section {
+      display: flex;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .counter-box {
+      flex: 1;
+      background: #f8f8f8;
+      border-radius: 24px;
       padding: 18px;
-      margin: 10px auto;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      color: white;
-      background: #4CAF50;
-      cursor: pointer;
-      display: block;
     }
 
-    .btn:hover {
-      opacity: 0.95;
+    .counter-title {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
     }
 
-    #msg {
-      margin-top: 15px;
-      font-size: 18px;
+    .counter-value {
+      font-size: 38px;
       font-weight: bold;
     }
 
-    .reset-btn {
-      background: #666;
+    .counter-buttons {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
     }
+
+    .circle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: #007AFF;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .checkin-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: none;
+      background: #007AFF;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .admin-btn {
+      margin-top: 20px;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #msg {
+      margin-top: 18px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    #adminPanel {
+      display: none;
+      margin-top: 25px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: white;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .stat-title {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
   </style>
 </head>
 
 <body>
 
+<div class="container">
+
   <h1>Event Check-In</h1>
 
-  <div class="stats">
-    <div>Total Attendance</div>
-    <div class="big-number" id="total">0</div>
+  <div class="card">
 
-    <div class="small-stats">
-      <div>🧑 Adults: <span id="adults">0</span></div>
-      <div>🧒 Kids: <span id="children">0</span></div>
+    <input
+      type="text"
+      id="name"
+      placeholder="Full Name"
+    >
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email Address"
+    >
+
+    <input
+      type="tel"
+      id="phone"
+      placeholder="Emergency Contact"
+    >
+
+    <!-- Counters -->
+
+    <div class="counter-section">
+
+      <!-- Adults -->
+
+      <div class="counter-box">
+
+        <div class="counter-title">
+          Adults
+        </div>
+
+        <div
+          class="counter-value"
+          id="adultCount"
+        >
+          1
+        </div>
+
+        <div class="counter-buttons">
+
+          <button
+            class="circle-btn"
+            onclick="changeAdults(-1)"
+          >
+            −
+          </button>
+
+          <button
+            class="circle-btn"
+            onclick="changeAdults(1)"
+          >
+            +
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Children -->
+
+      <div class="counter-box">
+
+        <div class="counter-title">
+          Children
+        </div>
+
+        <div
+          class="counter-value"
+          id="childCount"
+        >
+          0
+        </div>
+
+        <div class="counter-buttons">
+
+          <button
+            class="circle-btn"
+            onclick="changeChildren(-1)"
+          >
+            −
+          </button>
+
+          <button
+            class="circle-btn"
+            onclick="changeChildren(1)"
+          >
+            +
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
+
+    <!-- Submit -->
+
+    <button
+      class="checkin-btn"
+      onclick="checkIn()"
+    >
+      Check In
+    </button>
+
+    <p id="msg"></p>
+
   </div>
 
-  <input type="text" id="name" placeholder="Full Name">
-  <input type="email" id="email" placeholder="Email">
-  <input type="tel" id="phone" placeholder="Emergency Contact">
+  <!-- Admin Button -->
 
-  <h3>Select Group Size</h3>
-
-  <button class="btn" onclick="checkIn(1,0)">👤 1 Adult</button>
-
-  <button class="btn" onclick="checkIn(2,0)">👥 2 Adults</button>
-
-  <button class="btn" onclick="checkIn(2,1)">👨‍👩‍👧 2 Adults + 1 Child</button>
-
-  <button class="btn" onclick="checkIn(2,2)">👨‍👩‍👧‍👧 2 Adults + 2 Children</button>
-
-  <button class="btn" onclick="checkIn(2,3)">👨‍👩‍👧‍👧‍👦 2 Adults + 3 Children</button>
-
-  <button class="btn reset-btn" onclick="resetDetails()">
-    🔄 Reset Saved Details
+  <button
+    class="admin-btn"
+    onclick="openAdmin()"
+  >
+    Admin Dashboard
   </button>
 
-  <p id="msg"></p>
+  <!-- Hidden Admin Panel -->
+
+  <div id="adminPanel">
+
+    <div class="stats">
+
+      <div class="stat-box">
+
+        <div class="stat-title">
+          Total
+        </div>
+
+        <div
+          class="stat-number"
+          id="total"
+        >
+          0
+        </div>
+
+      </div>
+
+      <div class="stat-box">
+
+        <div class="stat-title">
+          Adults
+        </div>
+
+        <div
+          class="stat-number"
+          id="adults"
+        >
+          0
+        </div>
+
+      </div>
+
+      <div class="stat-box">
+
+        <div class="stat-title">
+          Kids
+        </div>
+
+        <div
+          class="stat-number"
+          id="children"
+        >
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
 <script>
 
-  // ==============================
-  // 🔗 REPLACE WITH YOUR SHEETDB URL
-  // ==============================
-  const API_URL = "https://sheetdb.io/api/v1/ce2vzb2cgzonz";
+  // ======================================
+  // 🔗 REPLACE WITH YOUR SHEETDB API
+  // ======================================
 
-  // ==============================
-  // 🚀 LOAD SAVED DETAILS
-  // ==============================
+  const API_URL =
+    "https://sheetdb.io/api/v1/ce2vzb2cgzonz";
+
+  // ======================================
+  // 🔐 ADMIN PIN
+  // ======================================
+
+  const ADMIN_PIN = "1234";
+
+  // ======================================
+  // COUNTERS
+  // ======================================
+
+  let adults = 1;
+  let children = 0;
+
+  // ======================================
+  // AUTO FILL RETURNING USERS
+  // ======================================
+
   window.onload = function() {
 
     document.getElementById("name").value =
@@ -141,12 +370,55 @@
     document.getElementById("phone").value =
       localStorage.getItem("phone") || "";
 
-    loadCounts();
   };
 
-  // ==============================
-  // 📅 GET WEEK NUMBER
-  // ==============================
+  // ======================================
+  // UPDATE COUNTER DISPLAY
+  // ======================================
+
+  function updateCounters() {
+
+    document.getElementById("adultCount")
+      .innerText = adults;
+
+    document.getElementById("childCount")
+      .innerText = children;
+  }
+
+  // ======================================
+  // ADULT BUTTONS
+  // ======================================
+
+  function changeAdults(value) {
+
+    adults += value;
+
+    if (adults < 1) {
+      adults = 1;
+    }
+
+    updateCounters();
+  }
+
+  // ======================================
+  // CHILD BUTTONS
+  // ======================================
+
+  function changeChildren(value) {
+
+    children += value;
+
+    if (children < 0) {
+      children = 0;
+    }
+
+    updateCounters();
+  }
+
+  // ======================================
+  // WEEK NUMBER
+  // ======================================
+
   function getWeekNumber() {
 
     const d = new Date();
@@ -160,41 +432,72 @@
     );
   }
 
-  // ==============================
-  // 📊 LOAD LIVE COUNTS
-  // ==============================
-  function loadCounts() {
+  // ======================================
+  // ADMIN LOGIN
+  // ======================================
+
+  function openAdmin() {
+
+    const pin =
+      prompt("Enter Admin PIN");
+
+    if (pin !== ADMIN_PIN) {
+
+      alert("Wrong PIN");
+
+      return;
+    }
+
+    document.getElementById("adminPanel")
+      .style.display = "block";
+
+    loadStats();
+  }
+
+  // ======================================
+  // LOAD ADMIN STATS
+  // ======================================
+
+  function loadStats() {
 
     fetch(API_URL)
+
       .then(res => res.json())
+
       .then(data => {
 
-        let adults = 0;
-        let children = 0;
+        let totalAdults = 0;
+        let totalChildren = 0;
 
         data.forEach(row => {
 
-          adults += Number(row.adults || 0);
+          totalAdults +=
+            Number(row.adults || 0);
 
-          children += Number(row.children || 0);
+          totalChildren +=
+            Number(row.children || 0);
+
         });
 
-        document.getElementById("adults").innerText = adults;
+        document.getElementById("adults")
+          .innerText = totalAdults;
 
-        document.getElementById("children").innerText = children;
+        document.getElementById("children")
+          .innerText = totalChildren;
 
-        document.getElementById("total").innerText =
-          adults + children;
+        document.getElementById("total")
+          .innerText =
+          totalAdults + totalChildren;
+
       });
+
   }
 
-  // Auto refresh every 5 seconds
-  setInterval(loadCounts, 5000);
+  // ======================================
+  // CHECK IN
+  // ======================================
 
-  // ==============================
-  // ✅ CHECK-IN FUNCTION
-  // ==============================
-  function checkIn(adults, children) {
+  function checkIn() {
 
     const name =
       document.getElementById("name")
@@ -212,51 +515,71 @@
     if (!name || !email || !phone) {
 
       document.getElementById("msg")
-      .innerText =
-      "⚠️ Please fill all details";
+        .innerText =
+        "Please fill all details";
 
       return;
     }
 
-    const currentWeek = getWeekNumber();
+    const currentWeek =
+      getWeekNumber();
 
-    // ==============================
-    // 🔒 DUPLICATE CHECK
-    // ==============================
+    // ======================================
+    // DUPLICATE CHECK
+    // ======================================
+
     fetch(API_URL)
+
       .then(res => res.json())
+
       .then(data => {
 
         const alreadyExists =
+
           data.some(row =>
 
             row.email &&
-            row.email.toLowerCase() === email &&
 
-            Number(row.week) === currentWeek
+            row.email.toLowerCase()
+            === email &&
+
+            Number(row.week)
+            === currentWeek
+
           );
 
         if (alreadyExists) {
 
           document.getElementById("msg")
-          .innerText =
-          "⚠️ Already checked in this week";
+            .innerText =
+            "Already checked in this week";
 
           return;
         }
 
-        // ==============================
-        // 💾 SAVE LOCALLY
-        // ==============================
-        localStorage.setItem("name", name);
+        // ======================================
+        // SAVE LOCALLY
+        // ======================================
 
-        localStorage.setItem("email", email);
+        localStorage.setItem(
+          "name",
+          name
+        );
 
-        localStorage.setItem("phone", phone);
+        localStorage.setItem(
+          "email",
+          email
+        );
 
-        // ==============================
-        // 📤 SEND TO SHEETDB
-        // ==============================
+        localStorage.setItem(
+          "phone",
+          phone
+        );
+
+        // ======================================
+        // SEND DATA
+        // ======================================
+
         fetch(API_URL, {
 
           method: "POST",
@@ -280,61 +603,57 @@
 
               children: children,
 
-              time: new Date().toISOString(),
+              time:
+                new Date().toISOString(),
 
-              week: currentWeek
+              week:
+                currentWeek
 
             }]
+
           })
+
         })
 
         .then(() => {
 
           document.getElementById("msg")
-          .innerText =
-          "✅ Checked in successfully!";
+            .innerText =
+            "Checked in successfully";
 
-          loadCounts();
+          // Reset counters after submit
+
+          adults = 1;
+          children = 0;
+
+          updateCounters();
+
         })
 
         .catch(() => {
 
           document.getElementById("msg")
-          .innerText =
-          "❌ Error submitting data";
+            .innerText =
+            "Error submitting";
+
         });
 
       });
+
   }
 
-  // ==============================
-  // 🔄 RESET SAVED DETAILS
-  // ==============================
-  function resetDetails() {
+  // ======================================
+  // PWA SERVICE WORKER
+  // ======================================
 
-    localStorage.clear();
-
-    document.getElementById("name").value = "";
-
-    document.getElementById("email").value = "";
-
-    document.getElementById("phone").value = "";
-
-    document.getElementById("msg")
-    .innerText =
-    "🔄 Saved details cleared";
-  }
-
-  // ==============================
-  // 📱 PWA SERVICE WORKER
-  // ==============================
   if ("serviceWorker" in navigator) {
 
     navigator.serviceWorker
       .register("service-worker.js");
+
   }
 
 </script>
 
 </body>
-</html>
+  </html>
