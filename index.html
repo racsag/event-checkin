@@ -10,232 +10,284 @@
 
 <style>
 
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-body {
-  margin: 0;
-  padding: 20px;
+body{
+  margin:0;
+  padding:20px;
+  min-height:100vh;
   background:
     linear-gradient(
       180deg,
-      #f8f9ff,
-      #eef2ff
+      #f8f9ff 0%,
+      #eef2ff 100%
     );
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
     sans-serif;
-  color: #111827;
+  color:#111827;
 }
 
-.container {
-  max-width: 480px;
-  margin: auto;
+.container{
+  max-width:480px;
+  margin:auto;
 }
 
-h1 {
-  text-align: center;
-  font-size: 38px;
-  margin-bottom: 8px;
-  letter-spacing: -1px;
+h1{
+  text-align:center;
+  font-size:40px;
+  margin-bottom:6px;
+  letter-spacing:-1px;
 }
 
-.subtitle {
-  text-align: center;
-  color: #6b7280;
-  margin-bottom: 24px;
+.subtitle{
+  text-align:center;
+  color:#6b7280;
+  margin-bottom:26px;
+  font-size:16px;
 }
 
-.card {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(18px);
-  border-radius: 34px;
-  padding: 24px;
+.card{
+  background:
+    rgba(255,255,255,0.82);
+  backdrop-filter:blur(18px);
+  border-radius:34px;
+  padding:24px;
   box-shadow:
     0 10px 40px rgba(0,0,0,0.08);
+  animation:fadeUp .6s ease;
 }
 
-input {
-  width: 100%;
-  padding: 18px;
-  margin-bottom: 14px;
-  border-radius: 22px;
-  border: 1px solid #e5e7eb;
-  font-size: 16px;
-  outline: none;
-  transition: 0.25s ease;
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
-input:focus {
-  border-color: #007AFF;
+input{
+  width:100%;
+  padding:18px;
+  margin-bottom:14px;
+  border-radius:22px;
+  border:1px solid #e5e7eb;
+  background:
+    rgba(255,255,255,0.92);
+  font-size:16px;
+  outline:none;
+  transition:.25s ease;
+}
+
+input:focus{
+  border-color:#007AFF;
   box-shadow:
     0 0 0 4px rgba(0,122,255,0.12);
+  transform:translateY(-1px);
 }
 
-.counter-section {
-  display: flex;
-  gap: 14px;
-  margin-top: 20px;
+.counter-section{
+  display:flex;
+  gap:14px;
+  margin-top:22px;
 }
 
-.counter-box {
-  flex: 1;
-  background: #f9fafb;
-  border-radius: 28px;
-  padding: 20px;
-  text-align: center;
+.counter-box{
+  flex:1;
+  background:
+    rgba(248,250,252,0.9);
+  border-radius:28px;
+  padding:20px;
+  text-align:center;
+  transition:.25s ease;
 }
 
-.counter-title {
-  color: #6b7280;
-  margin-bottom: 10px;
-  font-weight: 600;
+.counter-box:hover{
+  transform:translateY(-2px);
 }
 
-.counter-value {
-  font-size: 42px;
-  font-weight: 700;
+.counter-title{
+  color:#6b7280;
+  font-size:15px;
+  margin-bottom:10px;
+  font-weight:600;
 }
 
-.counter-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 14px;
+.counter-value{
+  font-size:42px;
+  font-weight:700;
 }
 
-.circle-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: #007AFF;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.18s ease;
+.counter-buttons{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:14px;
 }
 
-.circle-btn.clicked {
-  background: #34C759;
+.circle-btn{
+  width:48px;
+  height:48px;
+  border:none;
+  border-radius:50%;
+  background:#007AFF;
+  color:white;
+  font-size:24px;
+  cursor:pointer;
+  transition:all .18s ease;
+  box-shadow:
+    0 6px 14px rgba(0,122,255,0.25);
 }
 
-.circle-btn:active {
-  transform: scale(0.92);
+.circle-btn:active{
+  transform:scale(.92);
 }
 
-.checkin-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 18px;
-  border: none;
-  border-radius: 24px;
+.circle-btn.clicked{
+  background:#34C759;
+}
+
+.checkin-btn{
+  width:100%;
+  margin-top:26px;
+  padding:18px;
+  border:none;
+  border-radius:24px;
   background:
     linear-gradient(
       135deg,
       #007AFF,
       #5E5CE6
     );
-  color: white;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s ease;
+  color:white;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.22s ease;
+  box-shadow:
+    0 12px 24px rgba(0,122,255,0.24);
 }
 
-.checkin-btn:active {
-  transform: scale(0.98);
+.checkin-btn:hover{
+  transform:translateY(-2px);
 }
 
-.admin-btn {
-  width: 100%;
-  margin-top: 18px;
-  padding: 16px;
-  border: none;
-  border-radius: 20px;
-  background: white;
-  font-weight: 700;
-  cursor: pointer;
+.checkin-btn:active{
+  transform:scale(.98);
 }
 
-#msg {
-  margin-top: 16px;
-  text-align: center;
-  font-weight: 600;
-  min-height: 22px;
+.checkin-btn.loading{
+  opacity:.7;
 }
 
-.success {
-  color: #16a34a;
+.admin-btn{
+  width:100%;
+  margin-top:18px;
+  padding:16px;
+  border:none;
+  border-radius:22px;
+  background:white;
+  color:#111827;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.06);
 }
 
-.error {
-  color: #dc2626;
+.admin-btn:hover{
+  transform:translateY(-2px);
 }
 
-#adminPanel {
-  display: none;
-  margin-top: 24px;
+#msg{
+  margin-top:16px;
+  text-align:center;
+  font-weight:600;
+  min-height:20px;
 }
 
-.stats {
-  display: flex;
-  gap: 12px;
+.success{
+  color:#16a34a;
 }
 
-.stat-box {
-  flex: 1;
-  background: rgba(255,255,255,0.9);
-  border-radius: 24px;
-  padding: 18px;
-  text-align: center;
+.error{
+  color:#dc2626;
 }
 
-.stat-title {
-  color: #6b7280;
-  font-size: 14px;
+#adminPanel{
+  display:none;
+  margin-top:24px;
+  animation:fadeUp .4s ease;
 }
 
-.stat-number {
-  font-size: 34px;
-  font-weight: 700;
-  margin-top: 8px;
+.stats{
+  display:flex;
+  gap:12px;
 }
 
-.attendees {
-  margin-top: 20px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 28px;
-  padding: 18px;
+.stat-box{
+  flex:1;
+  background:
+    rgba(255,255,255,0.9);
+  border-radius:24px;
+  padding:18px;
+  text-align:center;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.06);
 }
 
-.attendees h2 {
-  margin-top: 0;
-  font-size: 22px;
+.stat-title{
+  color:#6b7280;
+  font-size:14px;
 }
 
-.attendee-item {
-  padding: 14px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: left;
+.stat-number{
+  font-size:34px;
+  font-weight:700;
+  margin-top:8px;
 }
 
-.attendee-item:last-child {
-  border-bottom: none;
+.attendees{
+  margin-top:20px;
+  background:
+    rgba(255,255,255,0.9);
+  border-radius:28px;
+  padding:18px;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.06);
 }
 
-.attendee-name {
-  font-weight: 700;
+.attendees h2{
+  margin-top:0;
+  font-size:22px;
 }
 
-.attendee-meta {
-  color: #6b7280;
-  font-size: 14px;
-  margin-top: 4px;
+.attendee-item{
+  padding:14px 0;
+  border-bottom:1px solid #f1f5f9;
+}
+
+.attendee-item:last-child{
+  border-bottom:none;
+}
+
+.attendee-name{
+  font-weight:700;
+}
+
+.attendee-meta{
+  color:#6b7280;
+  font-size:14px;
+  margin-top:4px;
 }
 
 </style>
@@ -246,6 +298,7 @@ input:focus {
 <div class="container">
 
 <h1>Event Check-In</h1>
+
 <div class="subtitle">
 Quick Family Registration
 </div>
@@ -267,7 +320,7 @@ Quick Family Registration
 <input
   type="tel"
   id="phone"
-  placeholder="UK Mobile Number (07xxxxxxxxx)"
+  placeholder="UK Mobile Number"
 >
 
 <div class="counter-section">
@@ -289,14 +342,14 @@ Adults
 
 <button
   class="circle-btn"
-  onclick="changeAdults(-1, this)"
+  onclick="changeAdults(-1,this)"
 >
 −
 </button>
 
 <button
   class="circle-btn"
-  onclick="changeAdults(1, this)"
+  onclick="changeAdults(1,this)"
 >
 +
 </button>
@@ -321,14 +374,14 @@ Children
 
 <button
   class="circle-btn"
-  onclick="changeChildren(-1, this)"
+  onclick="changeChildren(-1,this)"
 >
 −
 </button>
 
 <button
   class="circle-btn"
-  onclick="changeChildren(1, this)"
+  onclick="changeChildren(1,this)"
 >
 +
 </button>
@@ -392,14 +445,14 @@ Open Admin Dashboard
 <script>
 
 const API_URL =
-  "https://sheetdb.io/api/v1/ce2vzb2cgzonz";
+"https://sheetdb.io/api/v1/ce2vzb2cgzonz";
 
 const ADMIN_PIN = "1234";
 
 let adultCount = 1;
 let childCount = 0;
 
-window.onload = function() {
+window.onload = function(){
 
   document.getElementById("name").value =
     localStorage.getItem("name") || "";
@@ -412,33 +465,35 @@ window.onload = function() {
 
 };
 
-function flashButton(button) {
+function flashButton(button){
 
   button.classList.add("clicked");
 
-  setTimeout(() => {
+  setTimeout(()=>{
     button.classList.remove("clicked");
-  }, 220);
+  },220);
 
 }
 
-function updateCounters() {
+function updateCounters(){
 
-  document.getElementById("adultCountDisplay")
-    .innerText = adultCount;
+  document.getElementById(
+    "adultCountDisplay"
+  ).innerText = adultCount;
 
-  document.getElementById("childCountDisplay")
-    .innerText = childCount;
+  document.getElementById(
+    "childCountDisplay"
+  ).innerText = childCount;
 
 }
 
-function changeAdults(value, button) {
+function changeAdults(value,button){
 
   flashButton(button);
 
   adultCount += value;
 
-  if (adultCount < 1) {
+  if(adultCount < 1){
     adultCount = 1;
   }
 
@@ -446,13 +501,13 @@ function changeAdults(value, button) {
 
 }
 
-function changeChildren(value, button) {
+function changeChildren(value,button){
 
   flashButton(button);
 
   childCount += value;
 
-  if (childCount < 0) {
+  if(childCount < 0){
     childCount = 0;
   }
 
@@ -460,7 +515,7 @@ function changeChildren(value, button) {
 
 }
 
-function getWeekNumber() {
+function getWeekNumber(){
 
   const date = new Date();
 
@@ -474,119 +529,149 @@ function getWeekNumber() {
     new Date(date.getFullYear(),0,1);
 
   return Math.ceil(
-    (((date - yearStart) / 86400000) + 1)/7
+    (((date - yearStart)/86400000)+1)/7
   );
 
 }
 
-function openAdmin() {
+function openAdmin(){
 
-  const pin = prompt("Enter Admin PIN");
+  const pin =
+    prompt("Enter Admin PIN");
 
-  if (pin !== ADMIN_PIN) {
+  if(pin !== ADMIN_PIN){
+
     alert("Wrong PIN");
+
     return;
+
   }
 
-  document.getElementById("adminPanel")
-    .style.display = "block";
+  document.getElementById(
+    "adminPanel"
+  ).style.display = "block";
 
   loadStats();
 
-  setInterval(loadStats, 5000);
+  setInterval(loadStats,5000);
 
 }
 
-function loadStats() {
+function loadStats(){
 
   fetch(API_URL)
 
-    .then(res => res.json())
+  .then(res=>res.json())
 
-    .then(data => {
+  .then(data=>{
 
-      let totalAdults = 0;
-      let totalChildren = 0;
-      let grandTotal = 0;
+    let totalAdults = 0;
+    let totalChildren = 0;
+    let grandTotal = 0;
 
-      data.reverse();
+    data.reverse();
 
-      const attendeeHTML =
-        data.map(row => {
+    const attendeeHTML =
+      data.map(row=>{
 
-          totalAdults += Number(row.adults || 0);
-          totalChildren += Number(row.children || 0);
-          grandTotal += Number(row.total || 0);
+        totalAdults +=
+          Number(row.adults || 0);
 
-          return `
-            <div class="attendee-item">
-              <div class="attendee-name">
-                ${row.name || "Guest"}
-              </div>
+        totalChildren +=
+          Number(row.children || 0);
 
-              <div class="attendee-meta">
-                👨 Adults: ${row.adults || 0}
-                &nbsp;&nbsp;
-                🧒 Kids: ${row.children || 0}
-                &nbsp;&nbsp;
-                👥 Total: ${row.total || 0}
-              </div>
+        grandTotal +=
+          Number(row.total || 0);
 
-              <div class="attendee-meta">
-                📱 ${row.emergency_contact || ""}
-              </div>
+        return `
+          <div class="attendee-item">
 
-              <div class="attendee-meta">
-                🕒 ${row.time || ""}
-              </div>
+            <div class="attendee-name">
+              ${row.name || "Guest"}
             </div>
-          `;
 
-        }).join("");
+            <div class="attendee-meta">
+              👨 Adults:
+              ${row.adults || 0}
 
-      document.getElementById("adults")
-        .innerText = totalAdults;
+              &nbsp;&nbsp;
 
-      document.getElementById("children")
-        .innerText = totalChildren;
+              🧒 Kids:
+              ${row.children || 0}
 
-      document.getElementById("total")
-        .innerText = grandTotal;
+              &nbsp;&nbsp;
 
-      document.getElementById("attendeeList")
-        .innerHTML = attendeeHTML;
+              👥 Total:
+              ${row.total || 0}
+            </div>
 
-    });
+            <div class="attendee-meta">
+              📱 ${row.emergency_contact || ""}
+            </div>
+
+            <div class="attendee-meta">
+              🕒 ${row.time || ""}
+            </div>
+
+          </div>
+        `;
+
+      }).join("");
+
+    document.getElementById(
+      "adults"
+    ).innerText = totalAdults;
+
+    document.getElementById(
+      "children"
+    ).innerText = totalChildren;
+
+    document.getElementById(
+      "total"
+    ).innerText = grandTotal;
+
+    document.getElementById(
+      "attendeeList"
+    ).innerHTML = attendeeHTML;
+
+  });
 
 }
 
-function checkIn() {
+function checkIn(){
 
   const name =
-    document.getElementById("name")
-    .value.trim();
+    document.getElementById(
+      "name"
+    ).value.trim();
 
   const email =
-    document.getElementById("email")
-    .value.trim()
-    .toLowerCase();
+    document.getElementById(
+      "email"
+    ).value.trim().toLowerCase();
 
   const phone =
-    document.getElementById("phone")
-    .value.trim();
+    document.getElementById(
+      "phone"
+    ).value.trim();
+
+  const cleanedPhone =
+    phone.replace(/\s+/g,'');
 
   const msg =
     document.getElementById("msg");
 
   const btn =
-    document.getElementById("checkinBtn");
+    document.getElementById(
+      "checkinBtn"
+    );
 
   const ukPhoneRegex =
-    /^(\\+44|0)7\\d{9}$/;
+    /^(\+44|0)7\d{9}$/;
 
   msg.className = "";
 
-  if (!name || !phone) {
+  if(!name || !phone){
 
     msg.innerText =
       "Name and UK mobile number are required";
@@ -597,7 +682,7 @@ function checkIn() {
 
   }
 
-  if (!ukPhoneRegex.test(phone)) {
+  if(!ukPhoneRegex.test(cleanedPhone)){
 
     msg.innerText =
       "Enter valid UK mobile number";
@@ -609,116 +694,134 @@ function checkIn() {
   }
 
   btn.disabled = true;
+
+  btn.classList.add("loading");
+
   btn.innerText = "Checking In...";
 
-  const currentWeek = getWeekNumber();
+  const currentWeek =
+    getWeekNumber();
 
   fetch(API_URL)
 
-    .then(res => res.json())
+  .then(res=>res.json())
 
-    .then(data => {
+  .then(data=>{
 
-      const alreadyExists =
-        data.some(row => {
+    const alreadyExists =
+      data.some(row=>{
 
-          const sameWeek =
-            Number(row.week) === currentWeek;
+        const sameWeek =
+          Number(row.week) === currentWeek;
 
-          const samePhone =
-            row.emergency_contact === phone;
+        const samePhone =
+          row.emergency_contact === cleanedPhone;
 
-          return sameWeek && samePhone;
-
-        });
-
-      if (alreadyExists) {
-
-        msg.innerText =
-          "Already checked in this week";
-
-        msg.classList.add("error");
-
-        btn.disabled = false;
-        btn.innerText = "Check In";
-
-        return;
-
-      }
-
-      localStorage.setItem("name", name);
-      localStorage.setItem("email", email);
-      localStorage.setItem("phone", phone);
-
-      fetch(API_URL, {
-
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-
-          data: [{
-
-            name: name,
-            email: email,
-            emergency_contact: phone,
-
-            adults: Number(adultCount),
-
-            children: Number(childCount),
-
-            total:
-              Number(adultCount + childCount),
-
-            time:
-              new Date().toLocaleString("en-GB"),
-
-            week: Number(currentWeek)
-
-          }]
-
-        })
-
-      })
-
-      .then(() => {
-
-        msg.innerText =
-          `Checked in successfully for ${adultCount} adult(s) and ${childCount} child(ren)`;
-
-        msg.classList.add("success");
-
-        adultCount = 1;
-        childCount = 0;
-
-        updateCounters();
-
-        btn.disabled = false;
-        btn.innerText = "Check In";
-
-        loadStats();
-
-      })
-
-      .catch(() => {
-
-        msg.innerText = "Error submitting";
-
-        msg.classList.add("error");
-
-        btn.disabled = false;
-        btn.innerText = "Check In";
+        return sameWeek && samePhone;
 
       });
 
+    if(alreadyExists){
+
+      msg.innerText =
+        "Already checked in this week";
+
+      msg.classList.add("error");
+
+      btn.disabled = false;
+
+      btn.classList.remove("loading");
+
+      btn.innerText = "Check In";
+
+      return;
+
+    }
+
+    localStorage.setItem("name",name);
+    localStorage.setItem("email",email);
+    localStorage.setItem("phone",cleanedPhone);
+
+    fetch(API_URL,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        data:[{
+
+          name:name,
+
+          email:email,
+
+          emergency_contact:cleanedPhone,
+
+          adults:Number(adultCount),
+
+          children:Number(childCount),
+
+          total:
+            Number(adultCount + childCount),
+
+          time:
+            new Date().toLocaleString(
+              "en-GB"
+            ),
+
+          week:Number(currentWeek)
+
+        }]
+
+      })
+
+    })
+
+    .then(()=>{
+
+      msg.innerText =
+        `Checked in successfully for ${adultCount} adult(s) and ${childCount} child(ren)`;
+
+      msg.classList.add("success");
+
+      adultCount = 1;
+      childCount = 0;
+
+      updateCounters();
+
+      btn.disabled = false;
+
+      btn.classList.remove("loading");
+
+      btn.innerText = "Check In";
+
+      loadStats();
+
+    })
+
+    .catch(()=>{
+
+      msg.innerText =
+        "Error submitting";
+
+      msg.classList.add("error");
+
+      btn.disabled = false;
+
+      btn.classList.remove("loading");
+
+      btn.innerText = "Check In";
+
     });
+
+  });
 
 }
 
-if ("serviceWorker" in navigator) {
+if("serviceWorker" in navigator){
 
   navigator.serviceWorker
     .register("service-worker.js");
